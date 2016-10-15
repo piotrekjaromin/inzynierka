@@ -98,6 +98,7 @@
                         Traffic Threats Map
                     </div>
                     <div class="panel-body">
+
                         <%--<button class='btn btnMenu btn-primary' onclick="location.href='showThreats'">Show threats</button>--%>
 
                         <%--<sec:authorize access="hasAnyRole('ADMIN', 'USER')">--%>
@@ -113,7 +114,6 @@
 
                         <%--<br/>--%>
                         <%--<br/>--%>
-
                         <div id="map" style="width: 100%; height: 100%"></div>
                     </div>
                 </div>

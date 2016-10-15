@@ -121,10 +121,6 @@
                                 <th>type</th>
                                 <th>description</th>
                                 <th>is approved</th>
-                                <sec:authorize access="hasRole('ADMIN')">
-                                    <th>approve</th>
-                                    <th>delete</th>
-                                </sec:authorize>
                                 <th>details</th>
                             </tr>
                             <c:forEach items="${threats}" var="threat">

@@ -1,6 +1,7 @@
 package com.models;
 
 
+import com.configuration.CryptWithMD5;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
@@ -60,8 +61,6 @@ public class UserModel extends DatabaseObject
                 this.uuid = uuid;
         }
 
-
-
         public String getLogin() {
                 return login;
         }
@@ -75,9 +74,8 @@ public class UserModel extends DatabaseObject
         }
 
         public void setPassword(String password) {
-                this.password = password;
+                this.password =new CryptWithMD5().encode(password);
         }
-
 
         public UserRole getUserRole() {
                 return userRole;

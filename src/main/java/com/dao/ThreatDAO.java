@@ -39,11 +39,11 @@ public class ThreatDAO extends DatabaseDAO<Threat>{
     }
 
     public List<Threat> addedToday() {
-        return getAll()
-                .stream().filter(x -> DateUtils.isSameDay(new Date(), x.getDate())).collect(Collectors.toList());
+        return getAll().stream().filter(x -> DateUtils.isSameDay(new Date(), x.getDate())).collect(Collectors.toList());
     }
-
-
+    public List<Threat> myThreat(String login) {
+        return getAll().stream().filter(x -> x.getLogin().equals(login)).collect(Collectors.toList());
+    }
     public void delete (Threat threat){
         getSession().delete(threat);
     }

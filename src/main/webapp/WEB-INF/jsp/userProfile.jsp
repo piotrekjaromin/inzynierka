@@ -16,6 +16,7 @@
     <jsp:include page="partOfPage/cssImport.jsp"/>
     <jsp:include page="partOfPage/jsImport.jsp"/>
 
+
     <script>
         function view(bookmark) {
             $.ajax({
@@ -25,10 +26,10 @@
                 success: function (response) {
                     console.log(response);
 
-                    if (bookmark == 'userDetails') {
+                    if (bookmark == 'details') {
                         createUserDetails(response);
-                    } else if (bookmark == 'borrowedBooks') {
-                        createBorrowedBooks(response);
+                    } else if (bookmark == 'myThreats') {
+                        createMyThreats(response);
                     } else
                         createReservedBooks(response);
                 },
@@ -40,42 +41,60 @@
         }
 
         function createUserDetails(json) {
-            $('#myBooks').hide();
+            $('#myThreats').hide();
+            $('#commentedThreats').hide();
             $('#userDetails').show();
+
             document.getElementById("userDetailsBookmark").className = "active";
-            document.getElementById("borrowedBooksBookmark").className = "";
-            document.getElementById("reservedBooksBookmark").className = "";
+            document.getElementById("myThreatsBookmark").className = "";
+            document.getElementById("commentedThreatsBookmark").className = "";
 
 
             var userDetails = "login: " + json.login + "<br>";
             userDetails += "mail: " + json.mail + "<br>";
             userDetails += "name: " + json.name + "<br>";
             userDetails += "surname: " + json.surname + "<br>";
-            userDetails += "debt: " + json.debt + "<br>";
+
             userDetails += "<button class='btn btn-primary' data-toggle='modal' data-target='#edit'>edit</button><br>"
             $('#userDetails').html(userDetails)
             $('#loginEditUser').val(json.login);
             $('#nameEditUser').val(json.name);
             $('#surnameEditUser').val(json.surname);
             $('#mailEditUser').val(json.mail);
+            $('#uuidEditUser').val(json.uuid);
+
         }
 
-        function createBorrowedBooks(json) {
-            $('#myBooks').show();
+        function createMyThreats(json) {
+            $('#myThreats').show();
             $('#userDetails').hide();
+            $('#commentedThreats').hide();
+
             console.log("json");
             console.log(json);
             document.getElementById("userDetailsBookmark").className = "";
-            document.getElementById("borrowedBooksBookmark").className = "active";
-            document.getElementById("reservedBooksBookmark").className = "";
+            document.getElementById("myThreatsBookmark").className = "active";
+            document.getElementById("commentedThreatsBookmark").className = "";
 
 
-            var myBooks = "";
-            json.forEach(function (book) {
-                console.log(book);
-                myBooks += book.title + " " + book.authors[0].name + " " + book.authors[0].surname + " " + book.year + "<br>";
+            var threats = "";
+            threats = "<table class='table table-striped'>"
+            threats += "<tr>"
+            threats += "<th>Uuid</th>"
+            threats += "<th>Type</th>"
+            threats += "<th>Description</th>"
+            threats += "<th>Is approved</th>"
+            threats += "<th>Details</th>"
+            threats += "</tr>"
+
+            json.forEach(function (threat) {
+                var button = "<button class='btn btn-default' onclick=\"location.href='/TrafficThreat/getThreatDetails/?uuid=" + threat.uuid + "'\">"
+                button += "details"
+                button += "</button>"
+                threats += "<tr><td>" + threat.uuid + "</td><td> " + threat.type.threatType + "</td><td> " + threat.description + " </td><td>" + threat.isApproved + "</td><td>" + button + "</td></tr>";
             })
-            $('#myBooks').html(createTable(json));
+            threats += "</table>"
+            $('#myThreats').html(threats);
         }
 
         function createReservedBooks(json) {
@@ -84,8 +103,8 @@
             console.log("json");
             console.log(json);
             document.getElementById("userDetailsBookmark").className = "";
-            document.getElementById("borrowedBooksBookmark").className = "";
-            document.getElementById("reservedBooksBookmark").className = "active";
+            document.getElementById("myThreatsBookmark").className = "";
+            document.getElementById("commentedThreatsBookmark").className = "active";
 
             var myBooks = "";
             json.forEach(function (book) {
@@ -96,62 +115,65 @@
         }
 
 
-
         function editUser() {
 
-            var user = {
-                "name": $('#nameEditUser').val(),
-                "surname": $('#surnameEditUser').val(),
-                "login": $('#loginEditUser').val(),
-                "password": $('#passwordEditUser').val(),
-                "mail": $('#mailEditUser').val()
+            if ($("#passwordEditUser").val().length < 6) {
+                $('#alert_placeholderEditUser').html('<div class="alert alert-danger">Failure: password is too short</div>')
+                return
+            }
+            if ($("#mailEditUser").val().length < 10) {
+                $('#alert_placeholderEditUser').html('<div class="alert alert-danger">Failure: mail is too short</div>')
+                return
+            }
+            if ($("#mailEditUser").val().indexOf("@") < 0 || $("#mailEditUser").val().indexOf(".") < 0) {
+                $('#alert_placeholderEditUser').html('<div class="alert alert-danger">Failure: mail must contains characters: @ and .</div>')
+                return
+            }
+
+            if ($("#nameEditUser").val().length < 4) {
+                $('#alert_placeholderEditUser').html('<div class="alert alert-danger">Failure: name is too short</div>')
+                return
+            }
+            if ($("#surnameEditUser").val().length < 4) {
+                $('#alert_placeholderEditUser').html('<div class="alert alert-danger">Failure: surname is too short</div>')
+                return
             }
 
             $.ajax({
-                type: "POST",
-                contentType: 'application/json; charset=utf-8',
-                url: "/user/editUser",
-                dataType: 'text',
-                data: JSON.stringify(user),
-                success: function (response) {
-                    console.log(response);
-                    view('userDetails');
-                    $('#alert_placeholderEditUser').html('<div class="alert alert-success">' + response + '</div>')
-                },
-                error: function (response) {
-                    console.log(response);
-                    $('#alert_placeholderEditUser').html('<div class="alert alert-danger">' + response + '</div>')
-                }
-            });
+                        type: "POST",
+                        //contentType: 'application/json; charset=utf-8',
+                        url: "/TrafficThreat/user/editProfile",
+                        dataType: 'text',
+                        data: {
+                            uuid: $("#uuidEditUser").val(),
+                            mail: $("#mailEditUser").val(),
+                            name: $("#nameEditUser").val(),
+                            surname: $("#surnameEditUser").val(),
+                            password: $("#passwordEditUser").val()
+                        },
+                        success: function (response) {
+
+                            if (response.indexOf("Failure")>-1) {
+                                $('#alert_placeholderEditUser').html('<div class="alert alert-danger">' + response + '</div>')
+                            } else {
+                                view('details');
+                                $('#editAccountModal').hide();
+                                $('#alert_placeholderEditUser').html('<div class="alert alert-success">' + response + '</div>')
+                            }
+                        },
+                        error: function (response) {
+                            console.log(response);
+                            $('#alert_placeholderEditUser').html('<div class="alert alert-danger">' + response + '</div>')
+                        }
+                    }
+            );
         }
 
     </script>
 
 
-    <script id="threatsList" type="text/x-jsrender">
-        <tr>
-
-            <td>{{:title}}</td>
-            <td>{{:year}}</td>
-            <td>
-            {{for authors}}
-                {{:name}} {{:surname}} {{:bornYear}} <br>
-            {{/for}}
-            </td>
-            <td id='condition{{:id}}'>{{:condition.condition}}</td>
-            <td>{{:typeOfBook.name}}</td>
-            <td>{{:section.name}}</td>
-            <td><button class="btn btn-default" onclick="cancelReservation('{{:uuid}}')">Cancel reservation</button></td>
-
-        </tr>
-
-
-
-
-    </script>
-
 </head>
-<body onload="view('userDetails')">
+<body onload="view('details')">
 <div id="wrapper">
     <jsp:include page="partOfPage/navigator.jsp"/>
 
@@ -167,19 +189,17 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <ul class="nav nav-tabs">
-                            <li role="presentation" class="active" id="userDetailsBookmark"><a onclick="view('userDetails')">User
-                                Details</a></li>
-                            <li role="presentation" class="" id="borrowedBooksBookmark"><a onclick="view('borrowedBooks')">Borrowed
-                                Books</a></li>
-                            <li role="presentation" class="" id="reservedBooksBookmark"><a onclick="view('reservedBooks')">Reserved
-                                Books</a></li>
+                            <li role="presentation" class="active" id="userDetailsBookmark"><a onclick="view('details')">Details</a></li>
+                            <li role="presentation" class="" id="myThreatsBookmark"><a onclick="view('myThreats')">My Threats</a></li>
+                            <li role="presentation" class="" id="commentedThreatsBookmark"><a onclick="view('commentedThreats')">Commented Threads</a></li>
                         </ul>
                     </div>
                     <div class="panel-body">
 
 
                         <div id="userDetails"></div>
-                        <div id="myBooks"></div>
+                        <div id="myThreats"></div>
+                        <div id="commentedThreats"></div>
 
                     </div>
                 </div>
@@ -187,5 +207,6 @@
         </div>
     </div>
 </div>
+<jsp:include page="partOfPage/modals/editUser.jsp"/>
 </body>
 </html>

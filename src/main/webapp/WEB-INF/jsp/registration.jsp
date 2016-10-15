@@ -9,10 +9,16 @@
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <html>
 <head>
-    <title>Registration</title>
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Sign in</title>
+
+    <jsp:include page="partOfPage/cssImport.jsp"/>
+    <jsp:include page="partOfPage/jsImport.jsp"/>
     <script>
         function signUp(userRole) {
 
@@ -23,6 +29,23 @@
 
             if ($("#passwordReg").val().length < 6) {
                 $('#alert_placeholder').html('<div class="alert alert-danger">Failure: password is too short</div>')
+                return
+            }
+            if ($("#mailReg").val().length < 10) {
+                $('#alert_placeholder').html('<div class="alert alert-danger">Failure: mail is too short</div>')
+                return
+            }
+            if ($("#mailReg").val().indexOf("@") < 0 || $("#mailReg").val().indexOf(".") < 0) {
+                $('#alert_placeholder').html('<div class="alert alert-danger">Failure: mail must contains characters: @ and .</div>')
+                return
+            }
+
+            if ($("#nameReg").val().length < 4) {
+                $('#alert_placeholder').html('<div class="alert alert-danger">Failure: name is too short</div>')
+                return
+            }
+            if ($("#surnameReg").val().length < 4) {
+                $('#alert_placeholder').html('<div class="alert alert-danger">Failure: surname is too short</div>')
                 return
             }
 
@@ -41,8 +64,12 @@
                     userRole: userRole
                 },
                 success: function (response) {
-                    $(".form-inline").hide();
-                    $('#alert_placeholder').html('<div class="alert alert-success">' + response + '</div>')
+                    if (response == 'Success') {
+                        $("#registrationForm").hide();
+                        $('#alert_placeholder').html('<div class="alert alert-success">' + response + '</div>')
+                    } else {
+                        $('#alert_placeholder').html('<div class="alert alert-danger">' + response + '</div>')
+                    }
                 },
                 error: function (response) {
                     $('#alert_placeholder').html('<div class="alert alert-danger">' + response + '</div>')
@@ -54,31 +81,36 @@
 
 </head>
 <body>
+<div id="wrapper">
+    <jsp:include page="partOfPage/navigator.jsp"/>
 
-<h2>Library</h2>
-<%@include file="partOfPage/buttons/loginRegistrationButton.jsp" %>
+    <div id="page-wrapper">
+        <!-- /.row -->
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">Sign up</h1>
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+        <div class="row">
 
-<div class="panel panel-primary">
-    <div class="panel-heading">
-        Registration
-        <button class="btn btn-default" onclick="window.location.href='/TrafficThreat'">Go to main page</button>
+            <div class="col-xs-3" id="registrationForm">
+                <input type="text" id="loginReg" class="form-control" placeholder="Login">
+                <input type="password" id="passwordReg" class="form-control" placeholder="Password">
+                <input type="text" id="mailReg" class="form-control" placeholder="Mail">
+                <input type="text" id="nameReg" class="form-control" placeholder="Name">
+                <input type="text" id="surnameReg" class="form-control" placeholder="Surname">
+                <button onclick="signUp('USER')" class="btn btn-default">Sign Up</button>
+                <sec:authorize access="hasRole('ADMIN')">
+                    <button onclick="signUp('ADMIN')" class="btn btn-default">Sign Up As Admin</button>
+                </sec:authorize>
+            </div>
+
+        </div>
+        <div class="row">
+            <div id="alert_placeholder"/>
+        </div>
     </div>
-    <div class="panel-body">
-        <input type="text" id="loginReg" class="form-control" placeholder="Login">
-        <input type="password" id="passwordReg" class="form-control" placeholder="Password">
-        <input type="text" id="mailReg" class="form-control" placeholder="Mail">
-        <input type="text" id="nameReg" class="form-control" placeholder="Name">
-        <input type="text" id="surnameReg" class="form-control" placeholder="Surname">
-
-        <button onclick="signUp('USER')" class="btn btn-default">Sign up</button>
-        <sec:authorize access="hasRole('ADMIN')">
-            <button onclick="signUp('ADMIN')" class="btn btn-default">Sign up as admin</button>
-        </sec:authorize>
-
-    </div>
-</div>
-<div id="alert_placeholder">
-
 </div>
 
 </body>

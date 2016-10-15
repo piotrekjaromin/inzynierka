@@ -3,6 +3,7 @@ package com.controllers;
 import com.configuration.IdNumberGenerator;
 import com.dao.UserModelDAO;
 import com.dao.UserRoleDAO;
+import com.models.Threat;
 import com.models.UserModel;
 import com.models.UserRole;
 import com.models.UserRoleType;
@@ -20,7 +21,7 @@ import javax.servlet.http.HttpSession;
 
 import org.springframework.stereotype.Controller;
 
-
+import java.util.List;
 
 
 @Controller
@@ -61,19 +62,8 @@ public class LoginController extends BaseController {
         return "login";
     }
 
-    @RequestMapping(value = "/user/userProfile", method = RequestMethod.GET)
-    public String userProfilePage() {
-        return "userProfile";
-    }
 
-    @RequestMapping(value = "/user/userDetails", method = RequestMethod.POST, headers = "Accept=application/json")
-    @ResponseBody
-    public UserModel userDetails() {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        UserModel user = userModelDAO.getByLogin(userDetails.getUsername());
 
-        return user;
-    }
 
     @RequestMapping(value="/logout", method = RequestMethod.GET)
     public String logoutPage (HttpServletRequest request, HttpServletResponse response) {
@@ -115,9 +105,8 @@ public class LoginController extends BaseController {
         user.setMail(mail);
         user.setSurname(surname);
         user.setName(name);
-        user.setPassword(password);
         UserRole userRole = new UserRole();
-        userRole.setType("USER");
+        userRole.setType(role);
         userRole = userRoleDAO.saveIfNotInDB(userRole);
         user.setUserRole(userRole);
         userModelDAO.save(user);

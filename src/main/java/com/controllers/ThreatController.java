@@ -38,8 +38,7 @@ public class ThreatController extends BaseController {
 
 
     @RequestMapping(value = {"/user/addThreat"}, method = RequestMethod.POST)
-    @ResponseBody
-    public String addThreat(HttpServletRequest request) {
+    public String addThreat(HttpServletRequest request, @RequestParam("file") MultipartFile file, ModelMap model) {
         String typeOfThreat = request.getParameter("typeOfThreat");
         String description= request.getParameter("description");
         String coordinates = request.getParameter("coordinates");
@@ -80,11 +79,13 @@ public class ThreatController extends BaseController {
         threat.setDescription(description);
         threat.setDate(new Date());
         threatDAO.save(threat);
+        addFile(file, threat.getUuid());
         UserModel user = userModelDAO.getByLogin(userDetails.getUsername());
         user.addThread(threat);
         userModelDAO.update(user);
 
-        return "Success";
+        model.addAttribute("threat", threat);
+        return "threatDetails";
 
     }
 
@@ -93,13 +94,50 @@ public class ThreatController extends BaseController {
         return "addImage";
     }
 
-    @RequestMapping(value = {"/user/addImage"}, method = RequestMethod.POST)
-    @ResponseBody
-    public String addImage(HttpServletRequest request , @RequestParam("file") MultipartFile file) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String threatUuid = request.getParameter("uuid");
+//    @RequestMapping(value = {"/user/addImage"}, method = RequestMethod.POST)
+//    @ResponseBody
+//    public String addImage(HttpServletRequest request , @RequestParam("file") MultipartFile file) {
+//        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        String threatUuid = request.getParameter("uuid");
+//
+//
+//        if (!file.isEmpty()) {
+//            try {
+//
+//                Threat threat = threatDAO.get(threatUuid);
+//
+//
+//                byte[] bytes = file.getBytes();
+//
+//                // Creating the directory to store file
+//                String rootPath = System.getProperty("catalina.home");
+//                File dir = new File("tmpFiles");
+//                if (!dir.exists())
+//                    dir.mkdirs();
+//
+//                // Create the file on server
+//                File serverFile = new File(dir.getAbsolutePath()
+//                        + File.separator + threatUuid);
+//                BufferedOutputStream stream = new BufferedOutputStream(
+//                        new FileOutputStream(serverFile));
+//                stream.write(bytes);
+//                stream.close();
+//                threat.setPathToPhoto(dir.getAbsolutePath()
+//                        + File.separator + threatUuid);
+//                threatDAO.update(threat);
+//
+//                return "You successfully uploaded file";
+//            }
+//            catch (Exception e) {
+//                return "Error";
+//            }
+//        }
+//        else {
+//            return "file was empty";
+//        }
+//    }
 
-
+    public String addFile(MultipartFile file, String threatUuid) {
         if (!file.isEmpty()) {
             try {
 

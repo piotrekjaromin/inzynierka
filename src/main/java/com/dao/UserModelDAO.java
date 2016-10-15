@@ -19,7 +19,6 @@ public class UserModelDAO extends DatabaseDAO<UserModel> {
     CryptWithMD5 cryptWithMD5;
 
     public void save(UserModel user) {
-        user.setPassword(cryptWithMD5.encode(user.getPassword()));
         getSession().save(user);
     }
 

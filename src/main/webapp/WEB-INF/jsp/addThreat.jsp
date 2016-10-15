@@ -47,13 +47,18 @@
         var map;
         var geocoder;
 
-        function checkData() {
+        function subFunction() {
             if ($("#typeOfThreat").val() == null) {
                 $('#alert_placeholder').html('<div class="alert alert-danger">Error: no choosen type of threat </div>')
                 return false;
             }
             if ($("#description").val() == "") {
                 $('#alert_placeholder').html('<div class="alert alert-danger">Error: no description</div>')
+                return false;
+            }
+
+            if ($("#description").val().length < 10) {
+                $('#alert_placeholder').html('<div class="alert alert-danger">Error: description too short</div>')
                 return false;
             }
             if ($("#coordinates").val() == "" || $("#coordinates").val().split(';').length != 2) {
@@ -66,7 +71,8 @@
                 return false;
             }
 
-            return true;
+            $("#addThreatID").submit();
+
 
         }
 
@@ -94,7 +100,7 @@
 
                 },
                 success: function (response) {
-                    $(".form-inline").hide();
+                    $("#addThreatForm").hide();
                     $('#alert_placeholder').html('<div class="alert alert-success">' + response + '</div>')
 
                 },
@@ -111,7 +117,7 @@
             });
             geocoder = new google.maps.Geocoder();
 
-            document.getElementById('submit').addEventListener('click', function () {
+            document.getElementById('checkLocation').addEventListener('click', function () {
                 geocodeAddress(geocoder, map);
             });
         }
@@ -163,17 +169,27 @@
                     </div>
                     <div class="panel-body">
 
-                        <select class="form-control" id="typeOfThreat" required>
-                            <option value="" disabled selected hidden>Type of threat</option>
-                            <c:forEach var="threatType" items="${threatTypes}">
-                                <option value=${threatType.threatType}>${threatType.threatType}</option>
-                            </c:forEach>
-                        </select>
-                        <input type="text" id="description" class="form-control" placeholder="Description">
-                        <input type="hidden" id="coordinates" class="form-control">
-                        <input id="address" type="textbox" class="form-control" value="Rynek główny, Kraków">
-                        <input id="submit" class="btn btn-default" type="button" value="check location">
-                        <button onclick="addThreat()" class="btn btn-default">Add threat</button>
+                        <div id="addThreatForm">
+
+                            <form method="POST" id="addThreatID" enctype="multipart/form-data" action="/TrafficThreat/user/addThreat" >
+                                <label class="btn btn-default btn-file">
+                                    Choose file <input type="file" name="file" style="display: none;"/>
+                                </label>
+                                <select class="form-control" id="typeOfThreat" name="typeOfThreat" required>
+                                    <option value="" disabled selected hidden>Type of threat</option>
+                                    <c:forEach var="threatType" items="${threatTypes}">
+                                        <option value=${threatType.threatType}>${threatType.threatType}</option>
+                                    </c:forEach>
+                                </select>
+                                <input type="text" id="description" name="description" class="form-control" placeholder="Description">
+                                <input type="hidden" id="coordinates" name="coordinates" class="form-control">
+                                <input id="address" type="textbox" class="form-control" name="address" value="Rynek główny, Kraków">
+                                <input id="checkLocation" class="btn btn-default" type="button" value="Check Location">
+                                <input type="button" onclick="subFunction()" class="btn btn-default" value="Add Threat">
+                            </form>
+
+
+                        </div>
                         <div id="alert_placeholder"></div>
 
                         <br/>
@@ -184,7 +200,7 @@
             </div>
         </div>
     </div>
-    </div>
+</div>
 
 </body>
 </html>
