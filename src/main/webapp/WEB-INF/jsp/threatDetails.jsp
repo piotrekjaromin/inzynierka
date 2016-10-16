@@ -33,7 +33,7 @@
                     uuid: threatUuid
                 },
                 success: function (response) {
-                    $('#image').html("<img alt='Embedded Image' style='width: 100%;' src='data:image/png;base64," + response + "'/> ");
+                    $('#image').html("<table style='width: 100%; height: 60%'><tr><td><img alt='Embedded Image' style='width: 100%;' src='data:image/png;base64," + response + "'/></td></tr></table> ");
                 },
                 error: function (response) {
                     $('#image').html(response);
@@ -63,7 +63,7 @@
     </script>
 </head>
 
-<body onload="showImage('${threat.uuid}')">
+<body onload="initMap(); showImage('${threat.uuid}')">
 <div id="wrapper">
     <jsp:include page="partOfPage/navigator.jsp"/>
 
@@ -145,11 +145,7 @@
 
                             </table>
                         </div>
-
-                        <table style="width: 100%; height: 60%">
-                            <tr><td><div id="image"/></td></tr>
-                        </table>
-
+                        <div id="image"/>
 
                     </div>
                 </div>

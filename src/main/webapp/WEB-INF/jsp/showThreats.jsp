@@ -38,7 +38,7 @@
         function approve(threatUuid) {
             $.ajax({
                 type: "POST",
-                url: "admin/approve",
+                url: "/TrafficThreat/admin/approve",
                 dataType: 'text',
                 data: {
                     uuid: threatUuid
@@ -57,7 +57,7 @@
         function disapprove(threatUuid) {
             $.ajax({
                 type: "POST",
-                url: "admin/disapprove",
+                url: "/TrafficThreat/admin/disapprove",
                 dataType: 'text',
                 data: {
                     uuid: threatUuid
@@ -76,7 +76,7 @@
         function deleteThreat(threatUuid) {
             $.ajax({
                 type: "POST",
-                url: "admin/deleteThreat",
+                url: "/TrafficThreat/admin/deleteThreat",
                 dataType: 'text',
                 data: {
                     uuid: threatUuid
@@ -121,7 +121,10 @@
                                     <th>login</th>
                                     <th>type</th>
                                     <th>description</th>
-                                    <th>is approved</th>
+                                    <sec:authorize access="hasRole('ADMIN')">
+                                        <th>is approved</th>
+                                        <th>delete</th>
+                                    </sec:authorize>
                                     <th>details</th>
                                 </tr>
                                 <c:forEach items="${threats}" var="threat">
@@ -130,7 +133,27 @@
                                         <td><c:out value="${threat.login}"/></td>
                                         <td><c:out value="${threat.type.threatType}"/></td>
                                         <td><c:out value="${threat.description}"/></td>
-                                        <td><c:out value="${threat.isApproved}"/></td>
+                                        <sec:authorize access="hasRole('ADMIN')">
+                                            <c:choose>
+                                                <c:when test="${threat.isApproved eq true}">
+                                                    <td>
+                                                        <button class="btn btn-default" onclick="disapprove('${threat.uuid}')">
+                                                            disapprove
+                                                        </button>
+                                                    </td>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <td>
+                                                        <button class="btn btn-default" onclick="approve('${threat.uuid}')">approve
+                                                        </button>
+                                                    </td>
+                                                </c:otherwise>
+                                            </c:choose>
+
+                                            <td>
+                                                <button class="btn btn-default" onclick="deleteThreat('${threat.uuid}')">delete</button>
+                                            </td>
+                                        </sec:authorize>
                                         <td>
                                             <button class="btn btn-default" onclick="location.href='getThreatDetails/?uuid=${threat.uuid}'">
                                                 details
