@@ -79,12 +79,12 @@ public class ThreatController extends BaseController {
         threat.setDescription(description);
         threat.setDate(new Date());
         threatDAO.save(threat);
-        addFile(file, threat.getUuid());
         UserModel user = userModelDAO.getByLogin(userDetails.getUsername());
         user.addThread(threat);
         userModelDAO.update(user);
+        addFile(file, threat.getUuid());
 
-        model.addAttribute("threat", threat);
+        model.addAttribute("threat", threatDAO.get(threat.getUuid()));
         return "threatDetails";
 
     }
@@ -239,17 +239,17 @@ public class ThreatController extends BaseController {
     @RequestMapping(value = "/showAllThreats", method = RequestMethod.GET)
     public String showAllThreat(ModelMap model) {
         model.addAttribute("threats", threatDAO.getAll());
-        return "showAllThreats";
+        return "showThreats";
     }
     @RequestMapping(value = "/showApprovedThreats", method = RequestMethod.GET)
     public String showApprovedThreat(ModelMap model) {
         model.addAttribute("threats", threatDAO.getAllApproved());
-        return "showApprovedThreats";
+        return "showThreats";
     }
     @RequestMapping(value = "/showNotApprovedThreats", method = RequestMethod.GET)
     public String showNotApprovedThreat(ModelMap model) {
         model.addAttribute("threats", threatDAO.getAllNotApproved());
-        return "showNotApprovedThreats";
+        return "showThreats";
     }
 
     @RequestMapping(value = "/showLogs", method = RequestMethod.GET)

@@ -114,33 +114,34 @@
                         Traffic Threats List
                     </div>
                     <div class="panel-body">
-                        <table class="table table-striped">
-                            <tr>
-                                <th>uuid</th>
-                                <th>login</th>
-                                <th>type</th>
-                                <th>description</th>
-                                <th>is approved</th>
-                                <th>details</th>
-                            </tr>
-                            <c:forEach items="${threats}" var="threat">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
                                 <tr>
-                                    <td><c:out value="${threat.uuid}"/></td>
-                                    <td><c:out value="${threat.login}"/></td>
-                                    <td><c:out value="${threat.type.threatType}"/></td>
-                                    <td><c:out value="${threat.description}"/></td>
-                                    <td><c:out value="${threat.isApproved}"/></td>
-
-                                    <td>
-                                        <button class="btn btn-default" onclick="location.href='getThreatDetails/?uuid=${threat.uuid}'">
-                                            details
-                                        </button>
-                                    </td>
+                                    <th>uuid</th>
+                                    <th>login</th>
+                                    <th>type</th>
+                                    <th>description</th>
+                                    <th>is approved</th>
+                                    <th>details</th>
                                 </tr>
-                            </c:forEach>
+                                <c:forEach items="${threats}" var="threat">
+                                    <tr>
+                                        <td><c:out value="${threat.uuid}"/></td>
+                                        <td><c:out value="${threat.login}"/></td>
+                                        <td><c:out value="${threat.type.threatType}"/></td>
+                                        <td><c:out value="${threat.description}"/></td>
+                                        <td><c:out value="${threat.isApproved}"/></td>
+                                        <td>
+                                            <button class="btn btn-default" onclick="location.href='getThreatDetails/?uuid=${threat.uuid}'">
+                                                details
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
 
 
-                        </table>
+                            </table>
+                        </div>
                     </div>
                     <div id="image"></div>
                 </div>
