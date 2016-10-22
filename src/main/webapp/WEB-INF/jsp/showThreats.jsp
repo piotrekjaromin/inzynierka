@@ -76,7 +76,7 @@
         function deleteThreat(threatUuid) {
             $.ajax({
                 type: "POST",
-                url: "/TrafficThreat/admin/deleteThreat",
+                url: "/TrafficThreat/user/deleteThreat",
                 dataType: 'text',
                 data: {
                     uuid: threatUuid
@@ -86,11 +86,10 @@
                     alert(response)
                 },
                 error: function (response) {
-                    alert("Failure")
+                    alert(response)
                 }
             });
-        }
-        ;
+        };
 
 
     </script>

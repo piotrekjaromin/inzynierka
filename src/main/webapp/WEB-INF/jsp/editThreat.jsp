@@ -1,85 +1,217 @@
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%--
-  Created by IntelliJ IDEA.
-  User: piotrek
-  Date: 08.04.16
-  Time: 10:46
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" type="text/css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-    <title>Edit threat</title>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Edit</title>
+
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBxPnLikp9JZlQjap5fpX4L6y3eeCNPz9o&callback=initMap"></script>
+    <jsp:include page="partOfPage/cssImport.jsp"/>
+    <jsp:include page="partOfPage/jsImport.jsp"/>
+
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <%--<style>--%>
+    <%--html, body {--%>
+    <%--height: 100%;--%>
+    <%--margin: 0;--%>
+    <%--padding: 0;--%>
+    <%--}--%>
+    <%--/*#map {*/--%>
+    <%--/*height: 70%;*/--%>
+    <%--/*}*/--%>
+    <%--#floating-panel {--%>
+    <%--position: absolute;--%>
+    <%--top: 10px;--%>
+    <%--left: 25%;--%>
+    <%--z-index: 5;--%>
+    <%--background-color: #fff;--%>
+    <%--padding: 5px;--%>
+    <%--border: 1px solid #999;--%>
+    <%--text-align: center;--%>
+    <%--font-family: 'Roboto','sans-serif';--%>
+    <%--line-height: 30px;--%>
+    <%--padding-left: 10px;--%>
+    <%--}--%>
+    <%--</style>--%>
 
     <script>
-        function edit() {
+
+        var map;
+        var geocoder;
+
+        function subFunction() {
+            if ($("#typeOfThreat").val() == null) {
+                $('#alert_placeholder').html('<div class="alert alert-danger">Error: no choosen type of threat </div>')
+                return false;
+            }
+            if ($("#description").val() == "") {
+                $('#alert_placeholder').html('<div class="alert alert-danger">Error: no description</div>')
+                return false;
+            }
+
+            if ($("#description").val().length < 10) {
+                $('#alert_placeholder').html('<div class="alert alert-danger">Error: description too short</div>')
+                return false;
+            }
+            if ($("#coordinates").val() == "" || $("#coordinates").val().split(';').length != 2) {
+                $('#alert_placeholder').html('<div class="alert alert-danger">Error: bad coordinates</div>')
+                return false;
+            }
+
+            if ($("#address").val() == "") {
+                $('#alert_placeholder').html('<div class="alert alert-danger">Error: bad location</div>')
+                return false;
+            }
+
+            $("#checkLocation").click();
+            $("#editThreatID").submit();
+
+
+        }
+
+        function addThreat() {
+
+//            if(!geocodeAddress(geocoder, map))  {
+//                console.log("error geocode");
+//                return;
+//            }
+
+            if (!checkData()) {
+                console.log("error checkData");
+                return;
+            }
+
             $.ajax({
                 type: "POST",
-                url: "/TrafficThreat/admin/editThreat",
+                url: "addThreat",
                 dataType: 'text',
                 data: {
-                    uuid: $("#uuid").val(),
                     typeOfThreat: $("#typeOfThreat").val(),
-                    location: $("#location").val(),
-                    description: $("#description").val()
+                    description: $("#description").val(),
+                    coordinates: $("#coordinates").val(),
+                    address: $("#address").val()
+
                 },
                 success: function (response) {
-                    alert(response)
+                    $("#addThreatForm").hide();
+                    $('#alert_placeholder').html('<div class="alert alert-success">' + response + '</div>')
+
                 },
                 error: function (response) {
-                    alert(response)
+                    $('#alert_placeholder').html('<div class="alert alert-danger">' + response + '</div>')
                 }
             });
         }
-        ;
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 8,
+                center: {lat: 50.061, lng: 19.937}
+            });
+            geocoder = new google.maps.Geocoder();
+
+            document.getElementById('checkLocation').addEventListener('click', function () {
+                geocodeAddress(geocoder, map);
+            });
+        }
+
+        function geocodeAddress(geocoder, resultsMap) {
+            var isCorrect = false;
+            var address = document.getElementById('address').value;
+            geocoder.geocode({'address': address}, function (results, status) {
+                if (status === google.maps.GeocoderStatus.OK) {
+                    console.log("correct");
+                    isCorrect = true;
+                    $('#coordinates').val(results[0].geometry.location.lat() + ";" + results[0].geometry.location.lng());
+                    resultsMap.setZoom(15);
+                    resultsMap.setCenter(results[0].geometry.location);
+
+                    var marker = new google.maps.Marker({
+                        map: resultsMap,
+                        position: results[0].geometry.location
+                    });
+                } else {
+                    alert('Geocode was not successful for the following reason: ' + status);
+                    console.log("in geo");
+                }
+            });
+            console.log(isCorrect);
+            return isCorrect;
+        }
     </script>
+
 </head>
-<body>
-<div class="panel panel-primary">
-    <div class="panel-heading">
-        Edit Threat
-        <button class="btn btn-default" onclick="window.location.href='/TrafficThreat'">Go to main page</button>
-    </div>
-    <div class="panel-body">
+<body onload="initMap()">
 
-        <table>
-            <input type="hidden" value="${threat.uuid}" id="uuid">
-            <tr>
-                <td>uuid</td>
-                <td><c:out value="${threat.uuid}"/></td>
-            </tr>
-            <tr>
-                <td>type</td>
-                <td>
-                    <select class="form-control" id="typeOfThreat">
-                        <c:choose>
-                            <c:when test="${threat.type.threatType eq 'Stale'}">
-                                <option value="Stale" selected>Stale</option>
-                                <option value="Krotkotrwale">Krotkotrwale</option>
-                            </c:when>
-                            <c:otherwise>
-                                <option value="Stale">Stale</option>
-                                <option value="Krotkotrwale" selected>Krotkotrwale</option>
-                            </c:otherwise>
-                        </c:choose>
+<div id="wrapper">
+    <jsp:include page="partOfPage/navigator.jsp"/>
 
-                    </select></td>
-            </tr>
-            <tr>
-                <td>description</td>
-                <td><input type="text" class="form-control" value="${threat.description}" id="description"></td>
-            </tr>
-            <tr>
-                <td>location</td>
-                <td><input type="text" class="form-control"
-                           value="${threat.coordinates.street};${threat.coordinates.city}" id="location"/></td>
-            </tr>
-        </table>
-        <button class="btn btn-default" onclick="edit()">edit</button>
+    <div id="page-wrapper">
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">Edit Threat</h1>
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+        <!-- /.row -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        Edit Threat
+                    </div>
+                    <div class="panel-body">
+
+                        <div id="addThreatForm">
+
+                            <form method="POST" id="editThreatID" enctype="multipart/form-data" action="/TrafficThreat/user/editThreat" >
+                                <label class="btn btn-default btn-file">
+                                    Choose file <input type="file" name="file" style="display: none;"/>
+                                </label>
+                                <select class="form-control" id="typeOfThreat" name="typeOfThreat" required>
+                                    <option value="" disabled>Type of threat</option>
+                                    <c:forEach var="threatType" items="${threatTypes}">
+
+                                        <c:choose>
+                                            <c:when test="${threatType.threatType eq threat.type.threatType}">
+                                                <option value=${threatType.threatType} selected>${threatType.threatType}</option>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <option value=${threatType.threatType}>${threatType.threatType}</option>
+                                            </c:otherwise>
+                                        </c:choose>
+
+                                    </c:forEach>
+                                </select>
+                                <input type="text" id="description" name="description" class="form-control" value="${threat.description}">
+                                <input type="hidden" id="uuidThreat" name="uuidThreat" class="form-control" value="${threat.uuid}">
+                                <input type="hidden" id="coordinates" name="coordinates" class="form-control">
+                                <input id="address" type="textbox" class="form-control" name="address" value="${threat.coordinates.street}, ${threat.coordinates.city}">
+                                <input id="checkLocation" class="btn btn-default" type="button" value="Check Location">
+                                <input type="button" onclick="subFunction()" class="btn btn-default" value="Edit Threat">
+                            </form>
+
+
+                        </div>
+                        <div id="alert_placeholder"></div>
+
+                        <br/>
+                        <div id="map" style="width: 60%; height: 60%"></div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
+</div>
+
 </body>
 </html>

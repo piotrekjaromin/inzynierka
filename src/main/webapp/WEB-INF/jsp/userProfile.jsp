@@ -78,22 +78,25 @@
 
 
             var threats = "";
-            threats = "<table class='table table-striped'>"
+            threats = "<div class='table-responsive'><table class='table table-striped'>"
             threats += "<tr>"
             threats += "<th>Uuid</th>"
             threats += "<th>Type</th>"
             threats += "<th>Description</th>"
             threats += "<th>Is approved</th>"
             threats += "<th>Details</th>"
+            threats += "<th>Delete</th>"
             threats += "</tr>"
 
             json.forEach(function (threat) {
                 var button = "<button class='btn btn-default' onclick=\"location.href='/TrafficThreat/getThreatDetails/?uuid=" + threat.uuid + "'\">"
                 button += "details"
                 button += "</button>"
-                threats += "<tr><td>" + threat.uuid + "</td><td> " + threat.type.threatType + "</td><td> " + threat.description + " </td><td>" + threat.isApproved + "</td><td>" + button + "</td></tr>";
+                threats += "<tr><td>" + threat.uuid + "</td><td> " + threat.type.threatType + "</td><td> " + threat.description + " </td><td>" + threat.isApproved + "</td><td>" + button + "</td>";
+                var deleteButton = "<td> <button class=\"btn btn-default\" onclick=\"deleteThreat('" + threat.uuid + "')\">delete</button> </td></tr>"
+                threats += deleteButton;
             })
-            threats += "</table>"
+            threats += "</table></div>"
             $('#myThreats').html(threats);
         }
 
@@ -113,6 +116,24 @@
             })
             $('#myBooks').html(createTableReserved(json));
         }
+
+        function deleteThreat(threatUuid) {
+            $.ajax({
+                type: "POST",
+                url: "/TrafficThreat/user/deleteThreat",
+                dataType: 'text',
+                data: {
+                    uuid: threatUuid
+                },
+                success: function (response) {
+                    location.reload();
+                    alert(response)
+                },
+                error: function (response) {
+                    alert("Failure")
+                }
+            });
+        };
 
 
         function editUser() {

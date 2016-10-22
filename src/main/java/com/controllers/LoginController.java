@@ -88,12 +88,12 @@ public class LoginController extends BaseController {
     @ResponseBody
     public String addUser(HttpServletRequest request) {
 
-        String login = request.getParameter("login");
-        String password = request.getParameter("password");
-        String name = request.getParameter("name");
-        String surname = request.getParameter("surname");
-        String mail = request.getParameter("mail");
-        String role = request.getParameter("userRole");
+        String login = convertString(request.getParameter("login"));
+        String password = convertString(request.getParameter("password"));
+        String name = convertString(request.getParameter("name"));
+        String surname = convertString(request.getParameter("surname"));
+        String mail = convertString(request.getParameter("mail"));
+        String role = convertString(request.getParameter("userRole"));
 
         if(userModelDAO.isLogin(login)) return "Failure: login is used";
         if(userModelDAO.isMail(mail)) return "Failure: mail is used";
@@ -158,4 +158,10 @@ public class LoginController extends BaseController {
         return userName;
     }
 
+    public String convertString(String str) {
+        return str.replaceAll("Ä\u0085", "ą").replaceAll("Ä\u0084", "Ą").replaceAll("Å\u009B", "ś").replaceAll("Å\u009A", "Ś")
+                .replaceAll("Å\u0082", "ł").replaceAll("Å\u0081", "Ł").replaceAll("Å¼", "ż").replaceAll("'Å»", "Ż").replaceAll("'Åº", "ź")
+                .replaceAll("'Å¹", "Ź").replaceAll("Ä\u0087", "ć").replaceAll("Ä\u0086", "Ć").replaceAll("Å\u0084", "ń").replaceAll("Å\u0083", "Ń")
+                .replaceAll("Ä\u0099", "ę").replaceAll("Ä\u0098", "Ę").replaceAll("Ã³", "ó").replaceAll("Ã\u0093", "Ó");
+    }
 }

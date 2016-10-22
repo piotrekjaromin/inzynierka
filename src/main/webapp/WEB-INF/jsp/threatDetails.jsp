@@ -126,7 +126,7 @@
                                     <tr>
                                         <td>edit</td>
                                         <td>
-                                            <button class="btn btn-default" onclick="location.href='/TrafficThreat/getThreat/?uuid=${threat.uuid}'">edit
+                                            <button class="btn btn-default" onclick="location.href='/TrafficThreat/editThreat/?uuid=${threat.uuid}'">edit
                                             </button>
                                         </td>
                                     </tr>

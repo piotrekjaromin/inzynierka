@@ -38,11 +38,14 @@ public class ThreatController extends BaseController {
 
 
     @RequestMapping(value = {"/user/addThreat"}, method = RequestMethod.POST)
-    public String addThreat(HttpServletRequest request, @RequestParam("file") MultipartFile file, ModelMap model) {
-        String typeOfThreat = request.getParameter("typeOfThreat");
-        String description= request.getParameter("description");
-        String coordinates = request.getParameter("coordinates");
-        String location = request.getParameter("address");
+    public String addThreat(HttpServletRequest request, @RequestParam("file") MultipartFile file, ModelMap model) throws UnsupportedEncodingException {
+
+        request.setCharacterEncoding("UTF-8");
+
+        String typeOfThreat = convertString(request.getParameter("typeOfThreat"));
+        String description= convertString(request.getParameter("description"));
+        String coordinates = convertString(request.getParameter("coordinates"));
+        String location = convertString(request.getParameter("address"));
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if(coordinates.split(";").length!=2)
@@ -88,6 +91,60 @@ public class ThreatController extends BaseController {
         return "threatDetails";
 
     }
+
+    @RequestMapping(value = "/user/editThreat", method = RequestMethod.POST, headers = "Accept=application/json")
+    public String editThreat(HttpServletRequest request, ModelMap model, @RequestParam("file") MultipartFile file) throws UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");
+        String threatUuid = convertString(request.getParameter("uuidThreat"));
+        String typeOfThreat = convertString(request.getParameter("typeOfThreat"));
+        String coordinates = convertString(request.getParameter("coordinates"));
+        String location = convertString(request.getParameter("address"));
+        String description = convertString(request.getParameter("description"));
+
+        Threat threat = threatDAO.get(threatUuid);
+
+        if(coordinates.split(";").length!=2)
+            return "Error: bad coordinates";
+
+        if(location.split(",").length!=2)
+            return "Error: bad location";
+
+
+        if(threat!=null) {
+            Coordinates coordinates1 = new Coordinates();
+            coordinates1.setHorizontal(coordinates.split(";")[0]);
+            coordinates1.setVertical(coordinates.split(";")[1]);
+            coordinates1.setCity(location.split(",")[1]);
+            coordinates1.setStreet(location.split(",")[0]);
+            coordinatesDAO.save(coordinates1);
+            ThreatType threatType = new ThreatType();
+            List<ThreatType> threatTypes = threatTypeDAO.getAll();
+            for(ThreatType type : threatTypes) {
+                if(type.getThreatType() != null){
+                    if(type.getThreatType().equals(typeOfThreat)){
+                        threatType = type;
+                        break;
+                    }
+                }
+
+            }
+            if(threatType.getThreatType() == null){
+                threatType.setThreatType(typeOfThreat);
+                threatTypeDAO.save(threatType);
+            }
+            threat.setCoordinates(coordinates1);
+            threat.setType(threatType);
+            threat.setDescription(description);
+            threatDAO.update(threat);
+
+            addFile(file, threat.getUuid());
+
+            model.addAttribute("threat", threatDAO.get(threat.getUuid()));
+            return "threatDetails";
+        }
+        return "Failure: bad uuid";
+    }
+
 
     @RequestMapping(value = "/user/addImage", method = RequestMethod.GET)
     public String goAddImage(ModelMap model) {
@@ -174,41 +231,37 @@ public class ThreatController extends BaseController {
         }
     }
 
-
     @RequestMapping(value = "/showImage", method = RequestMethod.GET)
     public String goShowImage(ModelMap model) {
         return "showImage";
     }
 
-
     @RequestMapping(value = "/user/addVoteForThreat", method = RequestMethod.GET)
     public String goAddVote(ModelMap model, HttpServletRequest request) {
         if(request.getParameter("uuid")!=null)
-            request.setAttribute("threatUuid", request.getParameter("uuid"));
+            request.setAttribute("threatUuid", convertString(request.getParameter("uuid")));
         return "addVote";
     }
 
-
     @RequestMapping(value = {"/user/addVoteForThreat"}, method = RequestMethod.POST)
-    @ResponseBody
     public String addVote(HttpServletRequest request) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        short numberOfStars = Short.parseShort(request.getParameter("stars"));
-        String comment= request.getParameter("comment");
-        String threadUuid = request.getParameter("uuid");
+        short numberOfStars = Short.parseShort(convertString(request.getParameter("stars")));
+        String comment= convertString(request.getParameter("comment"));
+        String threadUuid = convertString(request.getParameter("uuid"));
 
         Vote vote = new Vote();
         vote.setLogin(userDetails.getUsername());
         vote.setNumberOfStars(numberOfStars);
         vote.setDate(new Date());
-        vote.setComment(comment);
+        vote.setVoteComment(comment);
         voteDAO.save(vote);
 
         Threat threat = threatDAO.get(threadUuid);
         threat.addVote(vote);
         threatDAO.update(threat);
 
-        return "Success";
+        return "index";
     }
 
     @RequestMapping(value = "/admin/addThreatType", method = RequestMethod.GET)
@@ -217,10 +270,9 @@ public class ThreatController extends BaseController {
     }
 
     @RequestMapping(value = {"/admin/addThreatType"}, method = RequestMethod.POST)
-    @ResponseBody
     public String addThreatType(HttpServletRequest request) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String threatType= request.getParameter("threatType");
+        String threatType= convertString(request.getParameter("threatType"));
 
         if(threatType.equals("")) {
             return "Failure: no threat type name";
@@ -233,7 +285,7 @@ public class ThreatController extends BaseController {
         threatType1.setThreatType(threatType);
         threatTypeDAO.save(threatType1);
 
-        return "Success";
+        return "index";
     }
 
     @RequestMapping(value = "/showAllThreats", method = RequestMethod.GET)
@@ -241,11 +293,13 @@ public class ThreatController extends BaseController {
         model.addAttribute("threats", threatDAO.getAll());
         return "showThreats";
     }
+
     @RequestMapping(value = "/showApprovedThreats", method = RequestMethod.GET)
     public String showApprovedThreat(ModelMap model) {
         model.addAttribute("threats", threatDAO.getAllApproved());
         return "showThreats";
     }
+
     @RequestMapping(value = "/showNotApprovedThreats", method = RequestMethod.GET)
     public String showNotApprovedThreat(ModelMap model) {
         model.addAttribute("threats", threatDAO.getAllNotApproved());
@@ -268,11 +322,10 @@ public class ThreatController extends BaseController {
         return "showUsers";
     }
 
-
     @RequestMapping(value = "/showImage", method = RequestMethod.POST, headers = "Accept=application/json")
     @ResponseBody
     public String showImage(HttpServletRequest request) {
-        String threatUuid = request.getParameter("uuid");
+        String threatUuid = convertString(request.getParameter("uuid"));
         Threat threat = threatDAO.get(threatUuid);
         if(threat!=null) {
             InputStream in;
@@ -296,7 +349,7 @@ public class ThreatController extends BaseController {
     @RequestMapping(value = "/admin/approve", method = RequestMethod.POST, headers = "Accept=application/json")
     @ResponseBody
     public String approve(HttpServletRequest request) {
-        String threatUuid = request.getParameter("uuid");
+        String threatUuid = convertString(request.getParameter("uuid"));
         Threat threat = threatDAO.get(threatUuid);
         if(threat!=null) {
             if(threat.getIsApproved()) {
@@ -314,7 +367,7 @@ public class ThreatController extends BaseController {
     @RequestMapping(value = "/admin/disapprove", method = RequestMethod.POST, headers = "Accept=application/json")
     @ResponseBody
     public String disapprove(HttpServletRequest request) {
-        String threatUuid = request.getParameter("uuid");
+        String threatUuid = convertString(request.getParameter("uuid"));
         Threat threat = threatDAO.get(threatUuid);
         if(threat!=null) {
             if(threat.getIsApproved()) {
@@ -329,20 +382,21 @@ public class ThreatController extends BaseController {
         return "bad uuid";
     }
 
-    @RequestMapping(value = "/admin/deleteThreat", method = RequestMethod.POST, headers = "Accept=application/json")
+    @RequestMapping(value = "/user/deleteThreat", method = RequestMethod.POST, headers = "Accept=application/json")
     @ResponseBody
     public String delete(HttpServletRequest request) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String threatUuid = request.getParameter("uuid");
+        String threatUuid = convertString(request.getParameter("uuid"));
         Threat threat = threatDAO.get(threatUuid);
 
         if(threat==null) {
             return "Failure: bad uuid";
         }
 
-        if(!userModelDAO.getByLogin(userDetails.getUsername()).getUserRole().getType().equals("ADMIN"))
-        return "Failure: no permission";
-
+        UserModel userTmp = userModelDAO.getByLogin(userDetails.getUsername());
+        if(!userTmp.getUserRole().getType().equals("ADMIN") && (userTmp.getUserRole().getType().equals("USER") && !threat.getLogin().equals(userTmp.getLogin()))) {
+            return "Error, no permission";
+        }
         Threat threat1 = threatDAO.get(threatUuid);
 
         for(UserModel user : userModelDAO.getAll()){
@@ -375,45 +429,26 @@ public class ThreatController extends BaseController {
         return "success";
     }
 
-    @RequestMapping(value = "/getThreat", method = RequestMethod.GET)
-    public String getThreat(ModelMap model, HttpServletRequest request) {
-        String threatUuid = request.getParameter("uuid");
+    @RequestMapping(value = "/editThreat", method = RequestMethod.GET)
+    public String editThreat(ModelMap model, HttpServletRequest request) {
+        String threatUuid = convertString(request.getParameter("uuid"));
         model.addAttribute("threat", threatDAO.get(threatUuid));
+        model.addAttribute("threatTypes", threatTypeDAO.getAll());
         return "editThreat";
-    }
-
-    @RequestMapping(value = "/admin/editThreat", method = RequestMethod.POST, headers = "Accept=application/json")
-    @ResponseBody
-    public String editThreat(HttpServletRequest request) {
-        String threatUuid = request.getParameter("uuid");
-        String typeOfThreat = request.getParameter("typeOfThreat");
-        String location = request.getParameter("location");
-        String description = request.getParameter("description");
-
-        Threat threat = threatDAO.get(threatUuid);
-        if(threat!=null) {
-            ThreatType threatType = threat.getType();
-            threatType.setThreatType(typeOfThreat);
-            threatTypeDAO.update(threatType);
-            threat.setType(threatType);
-            Coordinates coordinates = threat.getCoordinates();
-            coordinates.setStreet(location.split(";")[0]);
-            coordinates.setCity(location.split(";")[1]);
-            coordinatesDAO.update(coordinates);
-            threat.setCoordinates(coordinates);
-            threat.setDescription(description);
-            threatDAO.update(threat);
-            return "Success";
-        }
-        return "Failure: bad uuid";
     }
 
     @RequestMapping(value = "/getThreatDetails", method = RequestMethod.GET)
     public String getThreatDetails(ModelMap model, HttpServletRequest request) {
-        String threatUuid = request.getParameter("uuid");
+        String threatUuid = convertString(request.getParameter("uuid"));
         model.addAttribute("threat", threatDAO.get(threatUuid));
         return "threatDetails";
     }
 
+    public String convertString(String str) {
+        return str.replaceAll("Ä\u0085", "ą").replaceAll("Ä\u0084", "Ą").replaceAll("Å\u009B", "ś").replaceAll("Å\u009A", "Ś")
+                .replaceAll("Å\u0082", "ł").replaceAll("Å\u0081", "Ł").replaceAll("Å¼", "ż").replaceAll("'Å»", "Ż").replaceAll("'Åº", "ź")
+                .replaceAll("'Å¹", "Ź").replaceAll("Ä\u0087", "ć").replaceAll("Ä\u0086", "Ć").replaceAll("Å\u0084", "ń").replaceAll("Å\u0083", "Ń")
+                .replaceAll("Ä\u0099", "ę").replaceAll("Ä\u0098", "Ę").replaceAll("Ã³", "ó").replaceAll("Ã\u0093", "Ó");
+    }
 
 }

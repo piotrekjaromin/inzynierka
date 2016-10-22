@@ -66,7 +66,7 @@
                     context += "description: ${threat.description}<br>";
                     context += "date: ${threat.date}<br>";
                     context += "<img height='100' alt='No image' src='data:image/png;base64," + showImage('${threat.uuid}') + "'/><br>";
-                    context += "<button onclick='location.href=\"/TrafficThreat/getThreatDetails/?uuid=${threat.uuid}\"'>show details</button>";
+                    context += "<button class='btn btn-default' onclick='location.href=\"/TrafficThreat/getThreatDetails/?uuid=${threat.uuid}\"'>show details</button>";
 
                     infowindow.setContent(context);
                     infowindow.open(map, marker);
@@ -158,6 +158,6 @@
             </div>
         </div>
     </div>
-
+        <%--alter table threat drop constraint fkcf3t634qwigq9sv7cicw4y3wj--%>
 </body>
 </html>

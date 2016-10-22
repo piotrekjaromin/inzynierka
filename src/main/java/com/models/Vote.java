@@ -5,6 +5,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table
@@ -20,16 +21,19 @@ public class Vote {
 
     private String login;
 
-    private String comment;
+    private String voteComment;
 
     private Date date;
 
-    public String getComment() {
-        return comment;
+    @OneToMany
+    private List<Comment> comments;
+
+    public String getVoteComment() {
+        return voteComment;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setVoteComment(String voteComment) {
+        this.voteComment = voteComment;
     }
 
     public String getUuid() {
@@ -64,14 +68,23 @@ public class Vote {
         this.date = date;
     }
 
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
+    }
+
     @Override
     public String toString() {
         return "{" +
                 "\"uuid\":\"" + uuid + '\"' +
                 ", \"numberOfStars\":\"" + numberOfStars + '\"' +
                 ", \"login\":\"" + login + '\"' +
-                ", \"comment\":\"" + comment + '\"' +
+                ", \"voteComment\":\"" + voteComment + '\"' +
                 ", \"date\":\"" + date + '\"' +
+                ", \"comments\":\"" + comments + '\"' +
                 '}';
     }
 }

@@ -130,7 +130,7 @@ public class RestfulThreatController extends BaseController {
         vote.setLogin(session.getLogin());
         vote.setNumberOfStars(numberOfStars);
         vote.setLogin(login);
-        vote.setComment(comment);
+        vote.setVoteComment(comment);
         vote.setDate(date);
         voteDAO.save(vote);
 
