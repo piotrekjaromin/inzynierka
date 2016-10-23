@@ -45,8 +45,7 @@
                     $('#alert_placeholder').html('<div class="alert alert-danger">' + response + '</div>')
                 }
             });
-        }
-        ;
+        };
     </script>
 
 </head>
@@ -68,7 +67,7 @@
             </c:otherwise>
         </c:choose>
 
-        <button onclick="checkData()" class="btn btn-default">Add Vote</button>
+        <button onclick="checkData()" class="btn btn-default">Add Comment</button>
         <div id="alert_placeholder"></div>
     </div>
 </div>

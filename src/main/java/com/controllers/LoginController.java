@@ -129,7 +129,6 @@ public class LoginController extends BaseController {
 
     //    uruchomic tylko raz, dodaje konto admina
     @RequestMapping(value = "/addAdmin", method = RequestMethod.GET)
-    @ResponseBody
     public String addAdmin() {
         UserModel user = new UserModel();
         user.setLogin("admin");
@@ -143,7 +142,7 @@ public class LoginController extends BaseController {
         role = userRoleDAO.saveIfNotInDB(role);
         user.setUserRole(role);
         userModelDAO.save(user);
-        return "Success";
+        return "index";
     }
 
     private String getPrincipal(){

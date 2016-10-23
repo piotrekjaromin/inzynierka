@@ -79,9 +79,6 @@
                         <a href="/TrafficThreat/user/addThreat"><i class="fa fa-dashboard fa-fw"></i> Add Threat</a>
                     </li>
                     <li>
-                        <a href="/TrafficThreat/user/addImage"><i class="fa fa-dashboard fa-fw"></i> Add Image</a>
-                    </li>
-                    <li>
                         <a href="/TrafficThreat/admin/showUsers"><i class="fa fa-dashboard fa-fw"></i> Show Users</a>
                     </li>
                     <li>

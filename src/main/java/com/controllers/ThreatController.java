@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -243,7 +244,8 @@ public class ThreatController extends BaseController {
         return "addVote";
     }
 
-    @RequestMapping(value = {"/user/addVoteForThreat"}, method = RequestMethod.POST)
+    @RequestMapping(value = {"/user/addVoteForThreat"}, method = RequestMethod.POST, headers = "Accept=application/json")
+    @ResponseBody
     public String addVote(HttpServletRequest request) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         short numberOfStars = Short.parseShort(convertString(request.getParameter("stars")));
@@ -261,7 +263,7 @@ public class ThreatController extends BaseController {
         threat.addVote(vote);
         threatDAO.update(threat);
 
-        return "index";
+        return "Success";
     }
 
     @RequestMapping(value = "/admin/addThreatType", method = RequestMethod.GET)

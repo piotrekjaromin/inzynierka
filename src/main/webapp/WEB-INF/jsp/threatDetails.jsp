@@ -60,6 +60,42 @@
                 title: '${threat.description}'
             });
         }
+
+
+        function checkData() {
+            if($("#stars").val() == "") {
+                $('#alert_placeholder').html('<div class="alert alert-danger">Error: no stars </div>')
+                return;
+            }
+            if($("#comment").val() == "") {
+                $('#alert_placeholder').html('<div class="alert alert-danger">Error: no comment</div>')
+                return;
+            }
+
+            addVote();
+
+        }
+
+
+        function addVote() {
+            $.ajax({
+                type: "POST",
+                url: "/TrafficThreat/user/addVoteForThreat",
+                dataType: 'text',
+                data: {
+                    stars: $("#stars").val(),
+                    uuid: $("#uuid").val(),
+                    comment: $("#comment").val()
+                },
+                success: function (response) {
+                    $('#alert_placeholder').html('<div class="alert alert-success">' + response + '</div>')
+                    $('#addCommentFields').hide();
+                },
+                error: function (response) {
+                    $('#alert_placeholder').html('<div class="alert alert-danger">' + response + '</div>')
+                }
+            });
+        };
     </script>
 </head>
 
@@ -80,9 +116,11 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <table style="width: 100%; height: 60%">
-                        <tr>
-                            <td><div id="map" style="width: 100%; height: 99%"/></td>
-                        </tr>
+                            <tr>
+                                <td>
+                                    <div id="map" style="width: 100%; height: 99%"/>
+                                </td>
+                            </tr>
                         </table>
 
                         <div class="table-responsive">
@@ -108,13 +146,6 @@
                                     <td>${threat.date}</td>
                                 </tr>
                                 <tr>
-                                    <td>vote</td>
-                                    <td>
-                                        <c:forEach items="${threat.votes}" var="vote">
-                                            ${vote.numberOfStars}, ${vote.login}, ${vote.comment}. ${vote.date}<br/>
-                                        </c:forEach>
-                                    </td>
-                                <tr>
                                     <td>address</td>
                                     <td>${threat.coordinates.street}, ${threat.coordinates.city}</td>
                                 </tr>
@@ -131,18 +162,6 @@
                                         </td>
                                     </tr>
                                 </sec:authorize>
-                                <sec:authorize access="hasAnyRole('ADMIN', 'USER')">
-                                    <tr>
-                                        <td>add vote</td>
-                                        <td>
-                                            <button class="btn btn-default" onclick="location.href='/TrafficThreat/user/addVoteForThreat/?uuid=${threat.uuid}'">add
-                                                vote
-                                            </button>
-                                        </td>
-
-                                    </tr>
-                                </sec:authorize>
-
                             </table>
                         </div>
                         <div id="image"/>
@@ -150,9 +169,47 @@
                     </div>
                 </div>
             </div>
-        </div>
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            Comments
+                            <sec:authorize access="hasAnyRole('ADMIN', 'USER')">
+                                <%--<button class="btn btn-default" onclick="location.href='/TrafficThreat/user/addVoteForThreat/?uuid=${threat.uuid}'">Add</button>--%>
+                                <button class='btn btn-default' data-toggle='modal' data-target='#edit'>Add</button><br>
+                            </sec:authorize>
+                        </div>
+                        <div class="panel-body">
+                            <table class="table table-striped">
+                                <tr>
+                                    <th>vote</th>
+                                    <th>login</th>
+                                    <th>date</th>
+                                    <th>comment</th>
+                                    <th></th>
+                                </tr>
+                                <c:forEach items="${threat.votes}" var="vote">
+                                    <tr>
+                                        <td><c:out value="${vote.numberOfStars}"/></td>
+                                        <td><c:out value="${vote.login}"/></td>
+                                        <td><c:out value="${vote.date}"/></td>
+                                        <td><c:out value="${vote.voteComment}"/></td>
+                                        <td><button class="btn btn-default btn-xs">reply</button></td>
+                                    </tr>
+                                </c:forEach>
+
+
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
         </div>
     </div>
-
+</div>
+<jsp:include page="partOfPage/modals/addVote.jsp"/>
 </body>
 </html>
