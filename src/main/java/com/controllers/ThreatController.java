@@ -34,7 +34,7 @@ public class ThreatController extends BaseController {
 
     @RequestMapping(value = "/user/addThreat", method = RequestMethod.GET)
     public String goAddThreat(ModelMap model) {
-        model.addAttribute("threatTypes", threatTypeDAO.getAll());
+        model.addAttribute("threatType", threatTypeDAO.getFirst());
         return "addThreat";
     }
 
@@ -62,24 +62,10 @@ public class ThreatController extends BaseController {
         coordinates1.setCity(location.split(",")[1]);
         coordinates1.setStreet(location.split(",")[0]);
         coordinatesDAO.save(coordinates1);
-//        ThreatType threatType = new ThreatType();
-//        List<ThreatType> threatTypes = threatTypeDAO.getAll();
-//        for(ThreatType type : threatTypes) {
-//            if(type.getThreatType() != null){
-//                if(type.getThreatType().equals(typeOfThreat)){
-//                    threatType = type;
-//                    break;
-//                }
-//            }
-//
-//        }
-//        if(threatType.getThreatType() == null){
-//            threatType.setThreatType(typeOfThreat);
-//            threatTypeDAO.save(threatType);
-//        }
+        ThreatType type = threatTypeDAO.getByUuid(typeOfThreat);
         Threat threat = new Threat();
         threat.setCoordinates(coordinates1);
-        //threat.setType(threatType);
+        threat.setType(type);
         threat.setLogin(userDetails.getUsername());
         threat.setDescription(description);
         threat.setDate(new Date());
@@ -119,21 +105,7 @@ public class ThreatController extends BaseController {
             coordinates1.setCity(location.split(",")[1]);
             coordinates1.setStreet(location.split(",")[0]);
             coordinatesDAO.save(coordinates1);
-            ThreatType threatType = new ThreatType();
-            List<ThreatType> threatTypes = threatTypeDAO.getAll();
-//            for(ThreatType type : threatTypes) {
-//                if(type.getThreatType() != null){
-//                    if(type.getThreatType().equals(typeOfThreat)){
-//                        threatType = type;
-//                        break;
-//                    }
-//                }
-//
-//            }
-//            if(threatType.getThreatType() == null){
-//                threatType.setThreatType(typeOfThreat);
-//                threatTypeDAO.save(threatType);
-//            }
+            ThreatType threatType = threatTypeDAO.getByUuid(typeOfThreat);
             threat.setCoordinates(coordinates1);
             threat.setType(threatType);
             threat.setDescription(description);
@@ -287,7 +259,6 @@ public class ThreatController extends BaseController {
         if(!userModelDAO.getByLogin(userDetails.getUsername()).getUserRole().getType().equals("ADMIN"))
             return "Failure: no permission";
 
-
         if(threatTypeDAO.getAll().isEmpty()) {
             ThreatType nodeType = new ThreatType();
             nodeType.setParent(null);
@@ -305,28 +276,7 @@ public class ThreatController extends BaseController {
             threatTypeDAO.update(typeParent);
         }
 
-        String a = printTypes(threatTypeDAO.getFirst(), "");
-
-
-        return "index";
-    }
-
-
-    public String printTypes(ThreatType type, String dashes) {
-
-        String result = type.getName();
-
-        dashes += "---";
-
-        if(type != null) {
-            for (ThreatType typeTmp : type.getChilds()) {
-                result = result + "<br/>" + dashes + printTypes(typeTmp, dashes);
-            }
-
-            return result;
-        } else return "";
-
-
+        return "Success";
     }
 
     @RequestMapping(value = "/showAllThreats", method = RequestMethod.GET)
@@ -474,7 +424,7 @@ public class ThreatController extends BaseController {
     public String editThreat(ModelMap model, HttpServletRequest request) {
         String threatUuid = convertString(request.getParameter("uuid"));
         model.addAttribute("threat", threatDAO.get(threatUuid));
-        model.addAttribute("threatTypes", threatTypeDAO.getAll());
+        model.addAttribute("threatType", threatTypeDAO.getFirst());
         return "editThreat";
     }
 

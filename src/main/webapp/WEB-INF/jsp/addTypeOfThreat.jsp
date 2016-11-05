@@ -49,12 +49,17 @@
 
             },
             success: function (response) {
-                $("#addThreatForm").hide();
-                $('#alert_placeholder').html('<div class="alert alert-success">' + response + '</div>')
 
+                if(response == "Success") {
+                    $("#modalToHide").hide();
+                    $('#alert_placeholderAddType').html('<div class="alert alert-success">' + response + '</div>')
+                    window.location.href = "addThreatType";
+                } else {
+                    $('#alert_placeholderAddType').html('<div class="alert alert-danger">' + response + '</div>')
+                }
             },
             error: function (response) {
-                $('#alert_placeholder').html('<div class="alert alert-danger">' + response + '</div>')
+                $('#alert_placeholderAddType').html('<div class="alert alert-danger">' + response + '</div>')
             }
         });
     }
@@ -80,7 +85,7 @@
     <div id="page-wrapper">
         <div class="row">
             <div class="col-lg-12">
-                <h1 class="page-header">Dashboard</h1>
+                <h1 class="page-header">Add Types Of Threat</h1>
             </div>
             <!-- /.col-lg-12 -->
         </div>
@@ -89,7 +94,7 @@
             <div class="col-lg-12">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        Traffic Types Of Threat
+                        Types Of Traffic Threat
                     </div>
                     <div class="panel-body">
                         <% out.print(printTypes((ThreatType) request.getAttribute("threatType"), "")); %>

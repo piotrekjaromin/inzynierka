@@ -90,6 +90,7 @@
                 success: function (response) {
                     $('#alert_placeholder').html('<div class="alert alert-success">' + response + '</div>')
                     $('#addCommentFields').hide();
+                    location.reload(true)
                 },
                 error: function (response) {
                     $('#alert_placeholder').html('<div class="alert alert-danger">' + response + '</div>')
@@ -131,7 +132,7 @@
                                 </tr>
                                 <tr>
                                     <td>type</td>
-                                    <td>${threat.type.threatType}</td>
+                                    <td>${threat.type.name}</td>
                                 </tr>
                                 <tr>
                                     <td>description</td>

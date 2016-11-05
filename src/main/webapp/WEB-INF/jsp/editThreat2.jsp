@@ -56,7 +56,7 @@
                 <td>
                     <select class="form-control" id="typeOfThreat">
                         <c:choose>
-                            <c:when test="${threat.type.threatType eq 'Stale'}">
+                            <c:when test="${threat.type.name eq 'Stale'}">
                                 <option value="Stale" selected>Stale</option>
                                 <option value="Krotkotrwale">Krotkotrwale</option>
                             </c:when>

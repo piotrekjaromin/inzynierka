@@ -1,8 +1,6 @@
 package com.models;
 
 
-
-
 public abstract class DatabaseObject
 {
 

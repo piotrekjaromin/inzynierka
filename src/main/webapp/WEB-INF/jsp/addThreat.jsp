@@ -1,3 +1,4 @@
+<%@ page import="com.models.ThreatType" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
@@ -18,29 +19,25 @@
 
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
-    <%--<style>--%>
-    <%--html, body {--%>
-    <%--height: 100%;--%>
-    <%--margin: 0;--%>
-    <%--padding: 0;--%>
-    <%--}--%>
-    <%--/*#map {*/--%>
-    <%--/*height: 70%;*/--%>
-    <%--/*}*/--%>
-    <%--#floating-panel {--%>
-    <%--position: absolute;--%>
-    <%--top: 10px;--%>
-    <%--left: 25%;--%>
-    <%--z-index: 5;--%>
-    <%--background-color: #fff;--%>
-    <%--padding: 5px;--%>
-    <%--border: 1px solid #999;--%>
-    <%--text-align: center;--%>
-    <%--font-family: 'Roboto','sans-serif';--%>
-    <%--line-height: 30px;--%>
-    <%--padding-left: 10px;--%>
-    <%--}--%>
-    <%--</style>--%>
+
+    <%!
+        public String printTypes(ThreatType type, String dashes) {
+
+            if (type != null) {
+                String result;
+                dashes += "---|";
+                if(type.getChilds().isEmpty()) {
+                    result = "<option value = '" + type.getUuid() + "'>" + dashes + type.getName() + "</option>";
+                } else {
+                    result = "<option disabled value = '" + type.getUuid() + "'>" + dashes + type.getName() + "</option>";
+                }
+
+                for (ThreatType typeTmp : type.getChilds()) {
+                    result = result +  printTypes(typeTmp, dashes);
+                }
+                return result;
+            } else return "";
+        }%>
 
     <script>
 
@@ -178,9 +175,7 @@
                                 </label>
                                 <select class="form-control" id="typeOfThreat" name="typeOfThreat" required>
                                     <option value="" disabled selected hidden>Type of threat</option>
-                                    <c:forEach var="threatType" items="${threatTypes}">
-                                        <option value=${threatType.threatType}>${threatType.threatType}</option>
-                                    </c:forEach>
+                                    <% out.print(printTypes((ThreatType) request.getAttribute("threatType"), "")); %>
                                 </select>
                                 <input type="text" id="description" name="description" class="form-control" placeholder="Description">
                                 <input type="hidden" id="coordinates" name="coordinates" class="form-control">

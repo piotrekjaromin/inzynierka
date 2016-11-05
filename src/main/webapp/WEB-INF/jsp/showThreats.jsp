@@ -130,7 +130,7 @@
                                     <tr>
                                         <td><c:out value="${threat.uuid}"/></td>
                                         <td><c:out value="${threat.login}"/></td>
-                                        <td><c:out value="${threat.type.threatType}"/></td>
+                                        <td><c:out value="${threat.type.name}"/></td>
                                         <td><c:out value="${threat.description}"/></td>
                                         <sec:authorize access="hasRole('ADMIN')">
                                             <c:choose>

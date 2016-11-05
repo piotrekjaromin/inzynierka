@@ -62,7 +62,7 @@
 
             google.maps.event.addListener(marker, 'click', (function (marker, counter) {
                 return function () {
-                    var context = "type: ${threat.type.threatType}<br>";
+                    var context = "type: ${threat.type.name}<br>";
                     context += "description: ${threat.description}<br>";
                     context += "date: ${threat.date}<br>";
                     context += "<img height='100' alt='No image' src='data:image/png;base64," + showImage('${threat.uuid}') + "'/><br>";
@@ -138,7 +138,7 @@
                                     <tr>
                                         <td><c:out value="${threat.uuid}"/></td>
                                         <td><c:out value="${threat.login}"/></td>
-                                        <td><c:out value="${threat.type.threatType}"/></td>
+                                        <td><c:out value="${threat.type.name}"/></td>
                                         <td><c:out value="${threat.description}"/></td>
                                         <td><c:out value="${threat.isApproved}"/></td>
                                         <td>

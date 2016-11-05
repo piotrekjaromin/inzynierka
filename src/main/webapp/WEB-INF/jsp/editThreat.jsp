@@ -1,3 +1,5 @@
+<%@ page import="com.models.ThreatType" %>
+<%@ page import="com.models.Threat" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
@@ -18,29 +20,26 @@
 
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
-    <%--<style>--%>
-    <%--html, body {--%>
-    <%--height: 100%;--%>
-    <%--margin: 0;--%>
-    <%--padding: 0;--%>
-    <%--}--%>
-    <%--/*#map {*/--%>
-    <%--/*height: 70%;*/--%>
-    <%--/*}*/--%>
-    <%--#floating-panel {--%>
-    <%--position: absolute;--%>
-    <%--top: 10px;--%>
-    <%--left: 25%;--%>
-    <%--z-index: 5;--%>
-    <%--background-color: #fff;--%>
-    <%--padding: 5px;--%>
-    <%--border: 1px solid #999;--%>
-    <%--text-align: center;--%>
-    <%--font-family: 'Roboto','sans-serif';--%>
-    <%--line-height: 30px;--%>
-    <%--padding-left: 10px;--%>
-    <%--}--%>
-    <%--</style>--%>
+    <%!
+        public String printTypes(ThreatType type, String dashes, String threatTypeUuid) {
+
+            if (type != null) {
+                String result;
+                dashes += "---|";
+                if(type.getUuid().equals(threatTypeUuid)) {
+                    result = "<option value = '" + type.getUuid() + "' selected>" + dashes + type.getName() + "</option>";
+                }else if(type.getChilds().isEmpty()) {
+                    result = "<option value = '" + type.getUuid() + "'>" + dashes + type.getName() + "</option>";
+                } else {
+                    result = "<option disabled value = '" + type.getUuid() + "'>" + dashes + type.getName() + "</option>";
+                }
+
+                for (ThreatType typeTmp : type.getChilds()) {
+                    result = result +  printTypes(typeTmp, dashes, threatTypeUuid);
+                }
+                return result;
+            } else return "";
+        }%>
 
     <script>
 
@@ -178,18 +177,9 @@
                                 </label>
                                 <select class="form-control" id="typeOfThreat" name="typeOfThreat" required>
                                     <option value="" disabled>Type of threat</option>
-                                    <c:forEach var="threatType" items="${threatTypes}">
+                                    <% out.print(printTypes((ThreatType) request.getAttribute("threatType"), "",
+                                            ((Threat) request.getAttribute("threat")).getType().getUuid())); %>
 
-                                        <c:choose>
-                                            <c:when test="${threatType.threatType eq threat.type.threatType}">
-                                                <option value=${threatType.threatType} selected>${threatType.threatType}</option>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <option value=${threatType.threatType}>${threatType.threatType}</option>
-                                            </c:otherwise>
-                                        </c:choose>
-
-                                    </c:forEach>
                                 </select>
                                 <input type="text" id="description" name="description" class="form-control" value="${threat.description}">
                                 <input type="hidden" id="uuidThreat" name="uuidThreat" class="form-control" value="${threat.uuid}">

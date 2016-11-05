@@ -6,7 +6,7 @@
                 <button type="buttonModal" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">Add type</h4>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" id="modalToHide">
 
                 <div id="form" class="'form-group" style="display: inline">
                     <div class="panel-body">

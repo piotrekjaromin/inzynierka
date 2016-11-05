@@ -92,7 +92,7 @@
                 var button = "<button class='btn btn-default' onclick=\"location.href='/TrafficThreat/getThreatDetails/?uuid=" + threat.uuid + "'\">"
                 button += "details"
                 button += "</button>"
-                threats += "<tr><td>" + threat.uuid + "</td><td> " + threat.type.threatType + "</td><td> " + threat.description + " </td><td>" + threat.isApproved + "</td><td>" + button + "</td>";
+                threats += "<tr><td>" + threat.uuid + "</td><td> " + threat.type.name + "</td><td> " + threat.description + " </td><td>" + threat.isApproved + "</td><td>" + button + "</td>";
                 var deleteButton = "<td> <button class=\"btn btn-default\" onclick=\"deleteThreat('" + threat.uuid + "')\">delete</button> </td></tr>"
                 threats += deleteButton;
             })
