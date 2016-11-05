@@ -1,6 +1,7 @@
 package com.controllers;
 
 
+import com.dao.ThreatTypeDAO;
 import com.models.*;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -61,24 +62,24 @@ public class ThreatController extends BaseController {
         coordinates1.setCity(location.split(",")[1]);
         coordinates1.setStreet(location.split(",")[0]);
         coordinatesDAO.save(coordinates1);
-        ThreatType threatType = new ThreatType();
-        List<ThreatType> threatTypes = threatTypeDAO.getAll();
-        for(ThreatType type : threatTypes) {
-            if(type.getThreatType() != null){
-                if(type.getThreatType().equals(typeOfThreat)){
-                    threatType = type;
-                    break;
-                }
-            }
-
-        }
-        if(threatType.getThreatType() == null){
-            threatType.setThreatType(typeOfThreat);
-            threatTypeDAO.save(threatType);
-        }
+//        ThreatType threatType = new ThreatType();
+//        List<ThreatType> threatTypes = threatTypeDAO.getAll();
+//        for(ThreatType type : threatTypes) {
+//            if(type.getThreatType() != null){
+//                if(type.getThreatType().equals(typeOfThreat)){
+//                    threatType = type;
+//                    break;
+//                }
+//            }
+//
+//        }
+//        if(threatType.getThreatType() == null){
+//            threatType.setThreatType(typeOfThreat);
+//            threatTypeDAO.save(threatType);
+//        }
         Threat threat = new Threat();
         threat.setCoordinates(coordinates1);
-        threat.setType(threatType);
+        //threat.setType(threatType);
         threat.setLogin(userDetails.getUsername());
         threat.setDescription(description);
         threat.setDate(new Date());
@@ -120,19 +121,19 @@ public class ThreatController extends BaseController {
             coordinatesDAO.save(coordinates1);
             ThreatType threatType = new ThreatType();
             List<ThreatType> threatTypes = threatTypeDAO.getAll();
-            for(ThreatType type : threatTypes) {
-                if(type.getThreatType() != null){
-                    if(type.getThreatType().equals(typeOfThreat)){
-                        threatType = type;
-                        break;
-                    }
-                }
-
-            }
-            if(threatType.getThreatType() == null){
-                threatType.setThreatType(typeOfThreat);
-                threatTypeDAO.save(threatType);
-            }
+//            for(ThreatType type : threatTypes) {
+//                if(type.getThreatType() != null){
+//                    if(type.getThreatType().equals(typeOfThreat)){
+//                        threatType = type;
+//                        break;
+//                    }
+//                }
+//
+//            }
+//            if(threatType.getThreatType() == null){
+//                threatType.setThreatType(typeOfThreat);
+//                threatTypeDAO.save(threatType);
+//            }
             threat.setCoordinates(coordinates1);
             threat.setType(threatType);
             threat.setDescription(description);
@@ -268,13 +269,16 @@ public class ThreatController extends BaseController {
 
     @RequestMapping(value = "/admin/addThreatType", method = RequestMethod.GET)
     public String goAddThreatType(ModelMap model) {
+        model.addAttribute("threatType", threatTypeDAO.getFirst());
         return "addTypeOfThreat";
     }
 
-    @RequestMapping(value = {"/admin/addThreatType"}, method = RequestMethod.POST)
+    @RequestMapping(value = {"/admin/addThreatType"}, method = RequestMethod.POST, headers = "Accept=application/json")
+    @ResponseBody
     public String addThreatType(HttpServletRequest request) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String threatType= convertString(request.getParameter("threatType"));
+        String threatParentUuid = request.getParameter("parentUuid");
 
         if(threatType.equals("")) {
             return "Failure: no threat type name";
@@ -283,11 +287,46 @@ public class ThreatController extends BaseController {
         if(!userModelDAO.getByLogin(userDetails.getUsername()).getUserRole().getType().equals("ADMIN"))
             return "Failure: no permission";
 
-        ThreatType threatType1 = new ThreatType();
-        threatType1.setThreatType(threatType);
-        threatTypeDAO.save(threatType1);
+
+        if(threatTypeDAO.getAll().isEmpty()) {
+            ThreatType nodeType = new ThreatType();
+            nodeType.setParent(null);
+            nodeType.setName(threatType);
+            nodeType.setChilds(null);
+            threatTypeDAO.save(nodeType);
+        } else {
+            ThreatType typeParent = threatTypeDAO.getByUuid(threatParentUuid);
+            ThreatType newType = new ThreatType();
+            newType.setParent(typeParent);
+            newType.setName(threatType);
+            newType.setChilds(null);
+            threatTypeDAO.save(newType);
+            typeParent.addChild(newType);
+            threatTypeDAO.update(typeParent);
+        }
+
+        String a = printTypes(threatTypeDAO.getFirst(), "");
+
 
         return "index";
+    }
+
+
+    public String printTypes(ThreatType type, String dashes) {
+
+        String result = type.getName();
+
+        dashes += "---";
+
+        if(type != null) {
+            for (ThreatType typeTmp : type.getChilds()) {
+                result = result + "<br/>" + dashes + printTypes(typeTmp, dashes);
+            }
+
+            return result;
+        } else return "";
+
+
     }
 
     @RequestMapping(value = "/showAllThreats", method = RequestMethod.GET)

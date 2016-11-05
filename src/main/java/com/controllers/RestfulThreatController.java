@@ -29,54 +29,54 @@ public class RestfulThreatController extends BaseController {
      * @return status
      */
 
-    @RequestMapping(value = "/rest/addThreat/", method = RequestMethod.POST)
-    public ResponseEntity<String> addThreat(HttpServletRequest request) {
-        String typeOfThreat = request.getParameter("typeOfThreat");
-        String description= request.getParameter("description");
-        String coordinates = request.getParameter("coordinates");
-        String location = request.getParameter("location");
-        String token = request.getParameter("token");
-        Session session = sessionManager.getAndUpdateSession(token);
-
-        if (session == null)
-            return new ResponseEntity<String>("{\"status\" : \"Failure bad token\"}",HttpStatus.UNAUTHORIZED);
-
-        Coordinates coordinates1 = new Coordinates();
-        coordinates1.setHorizontal(coordinates.split(";")[0]);
-        coordinates1.setVertical(coordinates.split(";")[1]);
-        coordinates1.setCity(location.split(";")[1]);
-        coordinates1.setStreet(location.split(";")[0]);
-        coordinatesDAO.save(coordinates1);
-        ThreatType threatType = new ThreatType();
-        List<ThreatType> threatTypes = threatTypeDAO.getAll();
-        for(ThreatType type : threatTypes) {
-            if(type.getThreatType() != null){
-                if(type.getThreatType().equals(typeOfThreat)){
-                    threatType = type;
-                    break;
-                }
-            }
-
-        }
-        if(threatType.getThreatType() == null){
-            threatType.setThreatType(typeOfThreat);
-            threatTypeDAO.save(threatType);
-        }
-        Threat threat = new Threat();
-        threat.setCoordinates(coordinates1);
-        threat.setType(threatType);
-        threat.setLogin(session.getLogin());
-        threat.setDescription(description);
-        threat.setDate(new Date());
-        threat.setIsApproved(false);
-        threatDAO.save(threat);
-        UserModel user = userModelDAO.getByLogin(session.getLogin());
-        user.addThread(threat);
-        userModelDAO.update(user);
-        String threatUuid = threat.getUuid();
-
-        return new ResponseEntity<String>("{\"status\" : \"Success\", \"uuid\" : \"" + threatUuid + "\",\"what\" : \"threat added\"}",HttpStatus.OK);
-    }
+//    @RequestMapping(value = "/rest/addThreat/", method = RequestMethod.POST)
+//    public ResponseEntity<String> addThreat(HttpServletRequest request) {
+//        String typeOfThreat = request.getParameter("typeOfThreat");
+//        String description= request.getParameter("description");
+//        String coordinates = request.getParameter("coordinates");
+//        String location = request.getParameter("location");
+//        String token = request.getParameter("token");
+//        Session session = sessionManager.getAndUpdateSession(token);
+//
+//        if (session == null)
+//            return new ResponseEntity<String>("{\"status\" : \"Failure bad token\"}",HttpStatus.UNAUTHORIZED);
+//
+//        Coordinates coordinates1 = new Coordinates();
+//        coordinates1.setHorizontal(coordinates.split(";")[0]);
+//        coordinates1.setVertical(coordinates.split(";")[1]);
+//        coordinates1.setCity(location.split(";")[1]);
+//        coordinates1.setStreet(location.split(";")[0]);
+//        coordinatesDAO.save(coordinates1);
+//        ThreatType threatType = new ThreatType();
+//        List<ThreatType> threatTypes = threatTypeDAO.getAll();
+//        for(ThreatType type : threatTypes) {
+//            if(type.getThreatType() != null){
+//                if(type.getThreatType().equals(typeOfThreat)){
+//                    threatType = type;
+//                    break;
+//                }
+//            }
+//
+//        }
+//        if(threatType.getThreatType() == null){
+//            threatType.setThreatType(typeOfThreat);
+//            threatTypeDAO.save(threatType);
+//        }
+//        Threat threat = new Threat();
+//        threat.setCoordinates(coordinates1);
+//        threat.setType(threatType);
+//        threat.setLogin(session.getLogin());
+//        threat.setDescription(description);
+//        threat.setDate(new Date());
+//        threat.setIsApproved(false);
+//        threatDAO.save(threat);
+//        UserModel user = userModelDAO.getByLogin(session.getLogin());
+//        user.addThread(threat);
+//        userModelDAO.update(user);
+//        String threatUuid = threat.getUuid();
+//
+//        return new ResponseEntity<String>("{\"status\" : \"Success\", \"uuid\" : \"" + threatUuid + "\",\"what\" : \"threat added\"}",HttpStatus.OK);
+//    }
 
     /**
      * Akceptacja zagrozenia. Tylko admin

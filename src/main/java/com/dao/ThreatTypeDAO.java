@@ -28,4 +28,18 @@ public class ThreatTypeDAO extends DatabaseDAO<ThreatType>{
         return getSession().createQuery("from ThreatType").list();
     }
 
+    public ThreatType getFirst() {
+        for(ThreatType type : getAll()) {
+            if(type.getParent() == null) {
+                return type;
+            }
+        }
+
+        return null;
+    }
+
+    public ThreatType getByUuid(String uuid) {
+        return getSession().get(com.models.ThreatType.class, uuid);
+    }
+
     }

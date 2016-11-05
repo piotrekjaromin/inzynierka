@@ -3,10 +3,7 @@ package com.controllers;
 import com.configuration.IdNumberGenerator;
 import com.dao.UserModelDAO;
 import com.dao.UserRoleDAO;
-import com.models.Threat;
-import com.models.UserModel;
-import com.models.UserRole;
-import com.models.UserRoleType;
+import com.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -142,6 +139,13 @@ public class LoginController extends BaseController {
         role = userRoleDAO.saveIfNotInDB(role);
         user.setUserRole(role);
         userModelDAO.save(user);
+
+        ThreatType nodeType = new ThreatType();
+        nodeType.setParent(null);
+        nodeType.setName("Threats");
+        nodeType.setChilds(null);
+        threatTypeDAO.save(nodeType);
+
         return "index";
     }
 

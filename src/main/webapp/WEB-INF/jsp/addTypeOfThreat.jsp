@@ -1,3 +1,5 @@
+<%@ page import="com.models.ThreatType" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%--
   Created by IntelliJ IDEA.
   User: piotrek
@@ -7,6 +9,57 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
+
+<%!
+    public String printTypes(ThreatType type, String dashes) {
+
+    if (type != null) {
+        String result = type.getName();
+        String button = " <button class='btn btn-default btn-xs' data-toggle='modal' data-target='#addType' onclick='addUuid(\"" + type.getUuid() + "\")'>add</button><br/>";
+        dashes += "---|";
+
+        result += button;
+
+        for (ThreatType typeTmp : type.getChilds()) {
+            result = result + dashes + printTypes(typeTmp, dashes);
+        }
+        return result;
+    } else return "";
+}%>
+
+
+<script>
+
+    function addUuid(uuid) {
+        console.log("uuidFunc: " + uuid);
+        $("#parentUuid").val(uuid);
+    }
+
+    function addThreatType() {
+
+        console.log("uuid: " + $("#parentUuid").val());
+        console.log("type: " + $("#typeAddType").val());
+        $.ajax({
+            type: "POST",
+            url: "addThreatType",
+            dataType: 'text',
+            data: {
+                parentUuid: $("#parentUuid").val(),
+                threatType: $("#typeAddType").val()
+
+            },
+            success: function (response) {
+                $("#addThreatForm").hide();
+                $('#alert_placeholder').html('<div class="alert alert-success">' + response + '</div>')
+
+            },
+            error: function (response) {
+                $('#alert_placeholder').html('<div class="alert alert-danger">' + response + '</div>')
+            }
+        });
+    }
+</script>
+
 <head>
 
     <meta charset="utf-8">
@@ -36,19 +89,16 @@
             <div class="col-lg-12">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        Traffic Type Of Threat
+                        Traffic Types Of Threat
                     </div>
                     <div class="panel-body">
-                        <form method="POST" action="addThreatType">
-                            <input class="form-control" type="text" name="threatType" id="threatType">
-                            <input class="btn btn-default" type="submit" value="Upload"/>
-                        </form>
+                        <% out.print(printTypes((ThreatType) request.getAttribute("threatType"), "")); %>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
+<jsp:include page="partOfPage/modals/addType.jsp"/>
 </body>
 </html>

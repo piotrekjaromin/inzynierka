@@ -48,8 +48,8 @@ public class UserModel extends DatabaseObject
 
         @ManyToOne(fetch = FetchType.EAGER)
         @JoinTable(name="user_userRole",
-                        joinColumns = {@JoinColumn(name="userId")},
-                        inverseJoinColumns = {@JoinColumn(name="userProfileId")})
+                        joinColumns = {@JoinColumn(name="userModel_uuid")},
+                        inverseJoinColumns = {@JoinColumn(name="userRole_uuid")})
         private UserRole userRole;
 
 
