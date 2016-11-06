@@ -16,4 +16,8 @@ public class VoteDAO extends DatabaseDAO<Vote>{
     public Vote get(String uuid) {
         return getSession().get(com.models.Vote.class, uuid);
     }
+
+    public void update(Vote vote) {
+        getSession().update(vote);
+    }
 }

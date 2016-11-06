@@ -28,5 +28,8 @@ public abstract class BaseController {
     @Autowired
     SessionManager sessionManager;
 
+    @Autowired
+    CommentDAO commentDAO;
+
 
 }

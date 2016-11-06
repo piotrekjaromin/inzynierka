@@ -2,6 +2,8 @@ package com.controllers;
 
 
 import com.dao.ThreatTypeDAO;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.models.*;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -40,7 +42,7 @@ public class ThreatController extends BaseController {
 
 
     @RequestMapping(value = {"/user/addThreat"}, method = RequestMethod.POST)
-    public String addThreat(HttpServletRequest request, @RequestParam("file") MultipartFile file, ModelMap model) throws UnsupportedEncodingException {
+    public String addThreat(HttpServletRequest request, @RequestParam("file") MultipartFile files[], ModelMap model) throws UnsupportedEncodingException {
 
         request.setCharacterEncoding("UTF-8");
 
@@ -73,7 +75,7 @@ public class ThreatController extends BaseController {
         UserModel user = userModelDAO.getByLogin(userDetails.getUsername());
         user.addThread(threat);
         userModelDAO.update(user);
-        addFile(file, threat.getUuid());
+        addFile(files[0], threat.getUuid());
 
         model.addAttribute("threat", threatDAO.get(threat.getUuid()));
         return "threatDetails";
@@ -217,6 +219,26 @@ public class ThreatController extends BaseController {
         return "addVote";
     }
 
+    @RequestMapping(value = {"/user/replyToComment"}, method = RequestMethod.POST, headers = "Accept=application/json")
+    @ResponseBody
+    public String reply(HttpServletRequest request) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String commentMessage = convertString(request.getParameter("comment"));
+        String voteUuid = convertString(request.getParameter("uuid"));
+
+        Comment comment = new Comment();
+        comment.setComment(commentMessage);
+        comment.setDate(new Date());
+        comment.setLogin(userDetails.getUsername());
+        commentDAO.save(comment);
+
+        Vote vote = voteDAO.get(voteUuid);
+        vote.addComment(comment);
+        voteDAO.update(vote);
+
+        return "Success";
+    }
+
     @RequestMapping(value = {"/user/addVoteForThreat"}, method = RequestMethod.POST, headers = "Accept=application/json")
     @ResponseBody
     public String addVote(HttpServletRequest request) {
@@ -259,13 +281,7 @@ public class ThreatController extends BaseController {
         if(!userModelDAO.getByLogin(userDetails.getUsername()).getUserRole().getType().equals("ADMIN"))
             return "Failure: no permission";
 
-        if(threatTypeDAO.getAll().isEmpty()) {
-            ThreatType nodeType = new ThreatType();
-            nodeType.setParent(null);
-            nodeType.setName(threatType);
-            nodeType.setChilds(null);
-            threatTypeDAO.save(nodeType);
-        } else {
+
             ThreatType typeParent = threatTypeDAO.getByUuid(threatParentUuid);
             ThreatType newType = new ThreatType();
             newType.setParent(typeParent);
@@ -274,10 +290,10 @@ public class ThreatController extends BaseController {
             threatTypeDAO.save(newType);
             typeParent.addChild(newType);
             threatTypeDAO.update(typeParent);
-        }
 
         return "Success";
     }
+
 
     @RequestMapping(value = "/showAllThreats", method = RequestMethod.GET)
     public String showAllThreat(ModelMap model) {
@@ -371,6 +387,15 @@ public class ThreatController extends BaseController {
 
         }
         return "bad uuid";
+    }
+
+    @RequestMapping(value = "loadVotes", method = RequestMethod.POST, headers = "Accept=application/json")
+    @ResponseBody
+    public String loadVotes(HttpServletRequest request) {
+        String threatUuid = convertString(request.getParameter("uuid"));
+
+        GsonBuilder builder = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss");
+        return builder.create().toJson(threatDAO.get(threatUuid).getVotes());
     }
 
     @RequestMapping(value = "/user/deleteThreat", method = RequestMethod.POST, headers = "Accept=application/json")

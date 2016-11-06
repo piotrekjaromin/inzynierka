@@ -171,7 +171,7 @@
 
                             <form method="POST" id="addThreatID" enctype="multipart/form-data" action="/TrafficThreat/user/addThreat" >
                                 <label class="btn btn-default btn-file">
-                                    Choose file <input type="file" name="file" style="display: none;"/>
+                                    Choose file <input type="file" name="file" style="display: none;" multiple/>
                                 </label>
                                 <select class="form-control" id="typeOfThreat" name="typeOfThreat" required>
                                     <option value="" disabled selected hidden>Type of threat</option>

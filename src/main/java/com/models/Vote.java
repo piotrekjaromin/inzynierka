@@ -77,6 +77,15 @@ public class Vote {
         this.comments = comments;
     }
 
+    public void addComment(Comment comment) {
+        if(comments.isEmpty()) {
+            comments = new ArrayList<Comment>();
+            comments.add(comment);
+        } else {
+            comments.add(comment);
+        }
+    }
+
     @Override
     public String toString() {
         return "{" +

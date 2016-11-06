@@ -63,11 +63,11 @@
 
 
         function checkData() {
-            if($("#stars").val() == "") {
+            if ($("#stars").val() == "") {
                 $('#alert_placeholder').html('<div class="alert alert-danger">Error: no stars </div>')
                 return;
             }
-            if($("#comment").val() == "") {
+            if ($("#comment").val() == "") {
                 $('#alert_placeholder').html('<div class="alert alert-danger">Error: no comment</div>')
                 return;
             }
@@ -76,6 +76,25 @@
 
         }
 
+        function reply() {
+
+            console.log("in reply")
+            $.ajax({
+                type: "POST",
+                url: "/TrafficThreat/user/replyToComment",
+                dataType: 'text',
+                data: {
+                    uuid: $("#currentVoteUuid").val(),
+                    comment: $("#voteComment").val()
+                },
+                success: function (response) {
+                    result = response;
+                },
+                error: function (response) {
+                    $('#alert_addVote').html('<div class="alert alert-danger">' + response + '</div>')
+                }
+            });
+        }
 
         function addVote() {
             $.ajax({
@@ -96,7 +115,8 @@
                     $('#alert_placeholder').html('<div class="alert alert-danger">' + response + '</div>')
                 }
             });
-        };
+        }
+        ;
     </script>
 </head>
 
@@ -178,7 +198,8 @@
                             Comments
                             <sec:authorize access="hasAnyRole('ADMIN', 'USER')">
                                 <%--<button class="btn btn-default" onclick="location.href='/TrafficThreat/user/addVoteForThreat/?uuid=${threat.uuid}'">Add</button>--%>
-                                <button class='btn btn-default' data-toggle='modal' data-target='#edit'>Add</button><br>
+                                <button class='btn btn-default' data-toggle='modal' data-target='#edit'>Add</button>
+                                <br>
                             </sec:authorize>
                         </div>
                         <div class="panel-body">
@@ -196,8 +217,16 @@
                                         <td><c:out value="${vote.login}"/></td>
                                         <td><c:out value="${vote.date}"/></td>
                                         <td><c:out value="${vote.voteComment}"/></td>
-                                        <td><button class="btn btn-default btn-xs">reply</button></td>
                                     </tr>
+
+                                    <c:forEach items="${vote.comments}" var="comment">
+                                        <tr style='font-size: 12px'>
+                                            <td></td>
+                                            <td>${comment.login}</td>
+                                            <td>${comment.date}</td>
+                                            <td>${comment.comment}</td>
+                                        </tr
+                                    </c:forEach>
                                 </c:forEach>
 
 
@@ -211,6 +240,5 @@
         </div>
     </div>
 </div>
-<jsp:include page="partOfPage/modals/addVote.jsp"/>
 </body>
 </html>

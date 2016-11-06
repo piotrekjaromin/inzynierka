@@ -40,6 +40,110 @@
         }
         ;
 
+        function loadVotes(threatUuid) {
+            $("#currentThreatUuid").val(threatUuid);
+            $.ajax({
+                type: "POST",
+                url: "/TrafficThreat/loadVotes",
+                dataType: 'text',
+                data: {
+                    uuid: threatUuid
+                },
+                async: false,
+                success: function (response) {
+                    console.log(response);
+                    var obj = JSON.parse(response);
+
+                    var result = "<table class='table table-striped'><tr><td>stars</td><td>date</td><td>login</td><td>comment</td><td></td></tr>"
+
+                    obj.forEach(function (vote) {
+                        result += "<tr>";
+                        result += "<td>" + vote.numberOfStars + "</td>"
+                        result += "<td>" + vote.date + "</td>"
+                        result += "<td>" + vote.login + "</td>"
+                        result += "<td>" + vote.voteComment + "</td>"
+                        result += "<td><button class='btn btn-default btn-xs' data-toggle='modal' data-target='#replyModal' onclick='$(\"#currentVoteUuid\").val(\""+ vote.uuid + "\")'>reply</button>"
+                        result += "</tr>";
+                        vote.comments.forEach(function (comment) {
+                            result += "<tr style='font-size: 12px'>";
+                            result += "<td></td>";
+                            result += "<td>" + comment.date + "</td>";
+                            result += "<td>" + comment.login + "</td>";
+                            result += "<td>" + comment.comment + "</td>";
+                            result += "<td></td>";
+
+                            result += "</tr>"
+                        })
+                    })
+                    result += "</table>";
+                    result += "<button class='btn btn-default btn-xs' data-toggle='modal' data-target='#votesCommentModal'>Add Vote</button>"
+                    console.log(result);
+                    $("#insertVotes").html(result);
+                }
+            });
+        }
+
+        function checkData() {
+            if ($("#stars").val() == "") {
+                $('#alert_placeholder').html('<div class="alert alert-danger">Error: no stars </div>')
+                return;
+            }
+            if ($("#comment").val() == "") {
+                $('#alert_placeholder').html('<div class="alert alert-danger">Error: no comment</div>')
+                return;
+            }
+            if ($("#uuid").val() == "") {
+                $('#alert_placeholder').html('<div class="alert alert-danger">Error: no uuid</div>')
+                return;
+            }
+
+            addVote();
+
+        }
+
+
+        function addVote() {
+            $.ajax({
+                type: "POST",
+                url: "/TrafficThreat/user/addVoteForThreat",
+                dataType: 'text',
+                data: {
+                    stars: $("#stars").val(),
+                    uuid: $("#currentThreatUuid").val(),
+                    comment: $("#comment").val()
+                },
+                success: function (response) {
+                    if(response == "Success") {
+                        window.location.reload(false);
+                    }
+                },
+                error: function (response) {
+                    $('#alert_addVote').html('<div class="alert alert-danger">' + response + '</div>')
+                }
+            });
+        }
+        ;
+
+        function reply() {
+
+            console.log("in reply")
+            $.ajax({
+                type: "POST",
+                url: "/TrafficThreat/user/replyToComment",
+                dataType: 'text',
+                data: {
+                    uuid: $("#currentVoteUuid").val(),
+                    comment: $("#voteComment").val()
+                },
+                success: function (response) {
+                    result = response;
+                },
+                error: function (response) {
+                    $('#alert_addVote').html('<div class="alert alert-danger">' + response + '</div>')
+                }
+            });
+        }
+
         function initMap() {
             var myLatLng = {lat: 50.0618971, lng: 19.93675600000006};
             var counter = 0;
@@ -67,6 +171,7 @@
                     context += "date: ${threat.date}<br>";
                     context += "<img height='100' alt='No image' src='data:image/png;base64," + showImage('${threat.uuid}') + "'/><br>";
                     context += "<button class='btn btn-default' onclick='location.href=\"/TrafficThreat/getThreatDetails/?uuid=${threat.uuid}\"'>show details</button>";
+                    context += "<button class='btn btn-default' data-toggle='modal' data-target='#votesModal' onclick='loadVotes(\"${threat.uuid}\")'>votes</button>";
 
                     infowindow.setContent(context);
                     infowindow.open(map, marker);
@@ -125,32 +230,34 @@
                             Threats Added Today
                         </div>
                         <div class="panel-body">
-                            <table class="table table-striped">
-                                <tr>
-                                    <th>uuid</th>
-                                    <th>login</th>
-                                    <th>type</th>
-                                    <th>description</th>
-                                    <th>is approved</th>
-                                    <th>details</th>
-                                </tr>
-                                <c:forEach items="${addedToday}" var="threat">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
                                     <tr>
-                                        <td><c:out value="${threat.uuid}"/></td>
-                                        <td><c:out value="${threat.login}"/></td>
-                                        <td><c:out value="${threat.type.name}"/></td>
-                                        <td><c:out value="${threat.description}"/></td>
-                                        <td><c:out value="${threat.isApproved}"/></td>
-                                        <td>
-                                            <button class="btn btn-default" onclick="location.href='getThreatDetails/?uuid=${threat.uuid}'">
-                                                details
-                                            </button>
-                                        </td>
+                                        <th>uuid</th>
+                                        <th>login</th>
+                                        <th>type</th>
+                                        <th>description</th>
+                                        <th>is approved</th>
+                                        <th>details</th>
                                     </tr>
-                                </c:forEach>
+                                    <c:forEach items="${addedToday}" var="threat">
+                                        <tr>
+                                            <td><c:out value="${threat.uuid}"/></td>
+                                            <td><c:out value="${threat.login}"/></td>
+                                            <td><c:out value="${threat.type.name}"/></td>
+                                            <td><c:out value="${threat.description}"/></td>
+                                            <td><c:out value="${threat.isApproved}"/></td>
+                                            <td>
+                                                <button class="btn btn-default" onclick="location.href='getThreatDetails/?uuid=${threat.uuid}'">
+                                                    details
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
 
 
-                            </table>
+                                </table>
+                            </div>
                         </div>
                         <div id="image"></div>
                     </div>
@@ -158,6 +265,9 @@
             </div>
         </div>
     </div>
-        <%--alter table threat drop constraint fkcf3t634qwigq9sv7cicw4y3wj--%>
+    <%--alter table threat drop constraint fkcf3t634qwigq9sv7cicw4y3wj--%>
+
+</div>
+<jsp:include page="partOfPage/modals/votes.jsp"/>
 </body>
 </html>
