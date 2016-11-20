@@ -6,6 +6,7 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 @Entity
@@ -21,6 +22,7 @@ public class Threat extends DatabaseObject {
     @ManyToOne
     private ThreatType type;
 
+
     private String description;
 
     private String login;
@@ -35,8 +37,49 @@ public class Threat extends DatabaseObject {
     @OneToOne
     private Coordinates coordinates;
 
+//    @OneToMany
+//    private ThreatTimeTypes timeTypes;
+
     private boolean isApproved;
 
+    private Date startDate;
+    private Date endDate;
+    private String dateType;
+
+    @ElementCollection
+    private List<Integer> periodicDays;
+
+    public String getDateType() {
+        return dateType;
+    }
+
+    public void setDateType(String dateType) {
+        this.dateType = dateType;
+    }
+
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    public List<Integer> getPeriodicDays() {
+        return periodicDays;
+    }
+
+    public void setPeriodicDays(List<Integer> periodicDays) {
+        this.periodicDays = periodicDays;
+    }
 
     public String getUuid() {
         return uuid;
@@ -75,6 +118,13 @@ public class Threat extends DatabaseObject {
         this.description = description;
     }
 
+//    public ThreatTimeTypes getTimeTypes() {
+//        return timeTypes;
+//    }
+//
+//    public void setTimeTypes(ThreatTimeTypes timeTypes) {
+//        this.timeTypes = timeTypes;
+//    }
 
     public Date getDate() {
         return date;

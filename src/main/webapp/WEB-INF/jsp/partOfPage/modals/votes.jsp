@@ -31,7 +31,7 @@
             </div>
             <div class="modal-body">
                 <input type="hidden" id="currentThreatUuid">
-                Number of stars: <input type="number" id="stars" class="form-control"><br/>
+                Number of stars: <input type="number" class="rating" id="test" name="test" data-min="1" data-max="5" value="0">
                 Comment: <input type="text" id="comment" class="form-control" ><br/>
                 <button onclick="checkData()" class="btn btn-warning btn-sm">Add Comment</button>
             </div>

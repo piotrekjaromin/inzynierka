@@ -21,7 +21,7 @@
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBxPnLikp9JZlQjap5fpX4L6y3eeCNPz9o&callback=initMap"></script>
     <jsp:include page="partOfPage/cssImport.jsp"/>
     <jsp:include page="partOfPage/jsImport.jsp"/>
-
+    <mimeMap fileExtension=".mp4" mimeType="video/mp4" />
     <script>
         function showImage(threatUuid) {
             <c:if test="${threat.pathToPhoto ne null}">
@@ -115,8 +115,18 @@
                     $('#alert_placeholder').html('<div class="alert alert-danger">' + response + '</div>')
                 }
             });
+        };
+
+        function insertStars(stars) {
+
+            result = "";
+            for(i = 0; i<parseInt(stars); i++){
+                result += "<span class='glyphicon glyphicon-star'></span>"
+            }
+
+            $("#numberOfStars").innerHTML(result);
         }
-        ;
+
     </script>
 </head>
 
@@ -172,7 +182,14 @@
                                 </tr>
                                 <tr>
                                     <td>isApproved</td>
-                                    <td>${threat.isApproved}</td>
+                                    <td>${threat.isApproved}
+                                        <video width="320" height="240" controls>
+                                            <source src="file://${threat.pathToPhoto}.mp4" type="video/mp4">
+                                            <source src="movie.ogg" type="video/ogg">
+                                            Your browser does not support the video tag.
+                                        </video>
+
+                                    </td>
                                 </tr>
                                 <sec:authorize access="hasRole('ADMIN')">
                                     <tr>
@@ -186,6 +203,7 @@
                             </table>
                         </div>
                         <div id="image"/>
+
 
                     </div>
                 </div>
@@ -213,7 +231,11 @@
                                 </tr>
                                 <c:forEach items="${threat.votes}" var="vote">
                                     <tr>
-                                        <td><c:out value="${vote.numberOfStars}"/></td>
+                                        <td id="numberOfStars">
+                                            <c:forEach begin="1" end="${vote.numberOfStars}" var="star">
+                                                <span class='glyphicon glyphicon-star'></span>
+                                            </c:forEach>
+                                        </td>
                                         <td><c:out value="${vote.login}"/></td>
                                         <td><c:out value="${vote.date}"/></td>
                                         <td><c:out value="${vote.voteComment}"/></td>
