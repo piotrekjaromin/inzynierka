@@ -21,28 +21,8 @@
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBxPnLikp9JZlQjap5fpX4L6y3eeCNPz9o&callback=initMap"></script>
     <jsp:include page="partOfPage/cssImport.jsp"/>
     <jsp:include page="partOfPage/jsImport.jsp"/>
-    <mimeMap fileExtension=".mp4" mimeType="video/mp4" />
-    <script>
-        function showImage(threatUuid) {
-            <c:if test="${threat.pathToPhoto ne null}">
-            $.ajax({
-                type: "POST",
-                url: "/TrafficThreat/showImage",
-                dataType: 'text',
-                data: {
-                    uuid: threatUuid
-                },
-                success: function (response) {
-                    $('#image').html("<table style='width: 100%; height: 60%'><tr><td><img alt='Embedded Image' style='width: 100%;' src='data:image/png;base64," + response + "'/></td></tr></table> ");
-                },
-                error: function (response) {
-                    $('#image').html(response);
-                }
-            });
-            </c:if>
-        }
-        ;
-    </script>
+    <mimeMap fileExtension=".mp4" mimeType="video/mp4"/>
+
 
     <script>
 
@@ -115,12 +95,13 @@
                     $('#alert_placeholder').html('<div class="alert alert-danger">' + response + '</div>')
                 }
             });
-        };
+        }
+        ;
 
         function insertStars(stars) {
 
             result = "";
-            for(i = 0; i<parseInt(stars); i++){
+            for (i = 0; i < parseInt(stars); i++) {
                 result += "<span class='glyphicon glyphicon-star'></span>"
             }
 
@@ -182,14 +163,7 @@
                                 </tr>
                                 <tr>
                                     <td>isApproved</td>
-                                    <td>${threat.isApproved}
-                                        <video width="320" height="240" controls>
-                                            <source src="file://${threat.pathToPhoto}.mp4" type="video/mp4">
-                                            <source src="movie.ogg" type="video/ogg">
-                                            Your browser does not support the video tag.
-                                        </video>
-
-                                    </td>
+                                    <td>${threat.isApproved}</td>
                                 </tr>
                                 <sec:authorize access="hasRole('ADMIN')">
                                     <tr>
@@ -202,12 +176,50 @@
                                 </sec:authorize>
                             </table>
                         </div>
-                        <div id="image"/>
-
 
                     </div>
                 </div>
             </div>
+
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            Photos/Videos
+                            <sec:authorize access="hasAnyRole('ADMIN', 'USER')">
+                                <%--<button class="btn btn-default" onclick="location.href='/TrafficThreat/user/addVoteForThreat/?uuid=${threat.uuid}'">Add</button>--%>
+                                <form method="POST" id="addThreatID" enctype="multipart/form-data" action="/TrafficThreat/user/addPhotos">
+                                    <label class="btn btn-default btn-file">
+                                        <input type="file" name="file" accept=".jpg, .png, .mp4" multiple/>
+                                    </label>
+
+                                    <input type="hidden" name="threatUuid" value="${threat.uuid}">
+                                    <button type="submit">Upload</button>
+                                </form>
+                                <br>
+                            </sec:authorize>
+                        </div>
+                        <div class="panel-body">
+
+                            <c:forEach items="${photos}" var="photo">
+
+                                <img src="/directory-listing-uri/${photo}" alt="photo" height="20%" width="20%">
+                            </c:forEach>
+
+
+                            <c:forEach items="${videos}" var="video">
+
+                                <video width="320" height="240" controls>
+                                    <source src="/directory-listing-uri/${video}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </c:forEach>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
             <div class="row">
                 <div class="col-lg-12">
@@ -257,8 +269,6 @@
                     </div>
                 </div>
             </div>
-
-
         </div>
     </div>
 </div>

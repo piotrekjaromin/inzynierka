@@ -47,7 +47,7 @@
         var geocoder;
 
         $(document).ready(function () {
-            $('#example-getting-started').multiselect();
+            $('#dayOfWeek').multiselect();
         });
 
         function subFunction() {
@@ -92,16 +92,37 @@
                 return;
             }
 
+            var dateOfWeek = "";
+            var startDate = "";
+            var endDate = "";
+
+            if($('#dayOfWeek').length != 0) {
+                dateOfWeek = $('#dayOfWeek').val().join(",");
+            }
+
+            if($('#startDate').length != 0) {
+                startDate = $('#startDate').val().join(",");
+            }
+
+
+            if($('#endDate').length != 0) {
+                endDate = $('#dayOfWeek').val().join(",");
+            }
+
+
             $.ajax({
                 type: "POST",
                 url: "addThreat",
                 dataType: 'text',
                 data: {
                     typeOfThreat: $("#typeOfThreat").val(),
+                    typeOfThreat3: $("#typeOfThreat2").val(),
                     description: $("#description").val(),
                     coordinates: $("#coordinates").val(),
-                    address: $("#address").val()
-
+                    address: $("#address").val(),
+                    startDate: startDate,
+                    endDate: endDate,
+                    selectedDateType: dateOfWeek
                 },
                 success: function (response) {
                     $("#addThreatForm").hide();
@@ -161,7 +182,7 @@
                 $("#dateOfTypeFields").html(result);
 
             } else if ($("#typeOfThreat2").val() == "okresowe") {
-                result = "<select id='example-getting-started' multiple='multiple'>"
+                result = "<form class='form-inline'><div class='form-group'><select id='dayOfWeek' name='dayOfWeek' multiple='multiple'>"
                 result += "<option value='1'>Monday</option>"
                 result += "<option value='2'>Tuesday</option>"
                 result += "<option value='3'>Wednesday</option>"
@@ -169,9 +190,11 @@
                 result += "<option value='5'>Friday</option>"
                 result += "<option value='6'>Saturday</option>"
                 result += "<option value='7'>Sunday</option>"
-                result += "</select>"
+                result += "</select></div>"
+                result += "<div class='form-group'><input type='text' id='startDate' name='startDate' class='form-control' placeholder='start date'></div>"
+                result += "<div class='form-group'><input type='text' id='endDate' name='endDate' class='form-control' placeholder='end date'></div></form>"
                 $("#dateOfTypeFields").html(result);
-                $('#example-getting-started').multiselect()
+                $('#dayOfWeek').multiselect()
 
             } else $("#dateOfTypeFields").html("");
 
@@ -206,7 +229,7 @@
                                 <div class="row">
                                     <div class="form-group col-xs-3">
                                         <label class="btn btn-default btn-file">
-                                            Choose file <input type="file" name="file" style="display: none;" multiple/>
+                                            <input type="file" name="file" accept=".jpg, .png, .mp4" multiple/>
                                         </label>
                                     </div>
                                 </div>

@@ -287,10 +287,10 @@ public class RestfulThreatController extends BaseController {
         threatDAO.update(threat);
 
 
-        if(threat1.getPathToPhoto()!=null) {
-            File file = new File(threat1.getPathToPhoto());
-            file.delete();
-        }
+//        if(threat1.getPathToPhoto()!=null) {
+//            File file = new File(threat1.getPathToPhoto());
+//            file.delete();
+//        }
 
 
         if(threat1.getType()!=null)
@@ -312,13 +312,13 @@ public class RestfulThreatController extends BaseController {
         Threat threat = threatDAO.get(threatUuid);
         if(threat!=null) {
             InputStream in;
-            if (threat.getPathToPhoto() != null) {
-                in = new BufferedInputStream(new FileInputStream(threat.getPathToPhoto()));
-                final HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.IMAGE_PNG);
-
-                return new ResponseEntity<byte[]>(IOUtils.toByteArray(in), headers, HttpStatus.OK);
-            }
+//            if (threat.getPathToPhoto() != null) {
+//                in = new BufferedInputStream(new FileInputStream(threat.getPathToPhoto()));
+//                final HttpHeaders headers = new HttpHeaders();
+//                headers.setContentType(MediaType.IMAGE_PNG);
+//
+//                return new ResponseEntity<byte[]>(IOUtils.toByteArray(in), headers, HttpStatus.OK);
+//            }
             return new ResponseEntity<byte[]>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<byte[]>(HttpStatus.NOT_FOUND);
@@ -354,8 +354,8 @@ public class RestfulThreatController extends BaseController {
                 stream.write(bytes);
                 stream.close();
 
-                threat.setPathToPhoto(dir.getAbsolutePath()
-                        + File.separator + threatUuid);
+//                threat.setPathToPhoto(dir.getAbsolutePath()
+//                        + File.separator + threatUuid);
                 threatDAO.update(threat);
 
                 return new ResponseEntity<String>("{\"status\" : \"Success\" ,\"what\" : \"image" +

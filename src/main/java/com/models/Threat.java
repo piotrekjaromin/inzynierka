@@ -29,7 +29,8 @@ public class Threat extends DatabaseObject {
 
     private Date date;
 
-    private String pathToPhoto;
+    @ElementCollection
+    private List<String> pathesToPhoto;
 
     @OneToMany
     private List<Vote> votes;
@@ -37,17 +38,15 @@ public class Threat extends DatabaseObject {
     @OneToOne
     private Coordinates coordinates;
 
-//    @OneToMany
-//    private ThreatTimeTypes timeTypes;
-
     private boolean isApproved;
 
     private Date startDate;
     private Date endDate;
     private String dateType;
 
+
     @ElementCollection
-    private List<Integer> periodicDays;
+    private List<String> periodicDays;
 
     public String getDateType() {
         return dateType;
@@ -73,11 +72,11 @@ public class Threat extends DatabaseObject {
         this.endDate = endDate;
     }
 
-    public List<Integer> getPeriodicDays() {
+    public List<String> getPeriodicDays() {
         return periodicDays;
     }
 
-    public void setPeriodicDays(List<Integer> periodicDays) {
+    public void setPeriodicDays(List<String> periodicDays) {
         this.periodicDays = periodicDays;
     }
 
@@ -158,19 +157,20 @@ public class Threat extends DatabaseObject {
         this.isApproved = isApproved;
     }
 
-    public String getPathToPhoto() {
-        return pathToPhoto;
-    }
-
-    public void setPathToPhoto(String pathToPhoto) {
-        this.pathToPhoto = pathToPhoto;
-    }
 
     public void deleteAllConection(){
         type=null;
         votes.clear();
         coordinates=null;
 
+    }
+
+    public List<String> getPathesToPhoto() {
+        return pathesToPhoto;
+    }
+
+    public void setPathesToPhoto(List<String> pathesToPhoto) {
+        this.pathesToPhoto = pathesToPhoto;
     }
 
 
@@ -184,7 +184,7 @@ public class Threat extends DatabaseObject {
                 ", \"votes\": " + votes +
                 ", \"coordinates\":" + coordinates +
                 ", \"isApproved\":\"" + isApproved + '\"' +
-                ", \"path to photo\":\"" + pathToPhoto + '\"' +
+                ", \"pathes to photo\":\"" + pathesToPhoto + '\"' +
                 '}';
     }
 

@@ -1,34 +1,30 @@
 package com.controllers;
 
 
-import com.dao.ThreatTypeDAO;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.models.*;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.IOUtils;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Controller
@@ -42,21 +38,21 @@ public class ThreatController extends BaseController {
 
 
     @RequestMapping(value = {"/user/addThreat"}, method = RequestMethod.POST)
-    public String addThreat(HttpServletRequest request, @RequestParam("file") MultipartFile files[], ModelMap model) throws UnsupportedEncodingException {
+    public ModelAndView addThreat(HttpServletRequest request, @RequestParam("file") MultipartFile files[], ModelMap model) throws UnsupportedEncodingException, ParseException {
 
         request.setCharacterEncoding("UTF-8");
 
+        String[] dayOfWeeks = request.getParameterValues("dayOfWeek");
+        String startDate = request.getParameter("startDate");
+        String endDate = request.getParameter("endDate");
         String typeOfThreat = convertString(request.getParameter("typeOfThreat"));
+        String typeOfThreat2 = convertString(request.getParameter("typeOfThreat2"));
         String description= convertString(request.getParameter("description"));
         String coordinates = convertString(request.getParameter("coordinates"));
         String location = convertString(request.getParameter("address"));
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if(coordinates.split(";").length!=2)
-            return "Error: bad coordinates";
-
-        if(location.split(",").length!=2)
-            return "Error: bad location";
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
         Coordinates coordinates1 = new Coordinates();
         coordinates1.setHorizontal(coordinates.split(";")[0]);
@@ -71,19 +67,39 @@ public class ThreatController extends BaseController {
         threat.setLogin(userDetails.getUsername());
         threat.setDescription(description);
         threat.setDate(new Date());
+        threat.setDateType(typeOfThreat2);
+
+        if(typeOfThreat2.equals("jednorazowe")){
+            threat.setPeriodicDays(new ArrayList<String>(Arrays.asList(dayOfWeeks)));
+            threat.setStartDate(format.parse(startDate));
+            threat.setEndDate(format.parse(endDate));
+        } else if(typeOfThreat2.equals("okresowe")) {
+
+            threat.setStartDate(format.parse(startDate));
+            threat.setEndDate(format.parse(endDate));
+        }
+
         threatDAO.save(threat);
         UserModel user = userModelDAO.getByLogin(userDetails.getUsername());
         user.addThread(threat);
         userModelDAO.update(user);
-        addFile(files[0], threat.getUuid());
+        addFile(files, threat.getUuid());
 
         model.addAttribute("threat", threatDAO.get(threat.getUuid()));
-        return "threatDetails";
+        return new ModelAndView("redirect:/getThreatDetails?uuid=" + threat.getUuid() + "");
 
     }
 
-    @RequestMapping(value = "/user/editThreat", method = RequestMethod.POST, headers = "Accept=application/json")
-    public String editThreat(HttpServletRequest request, ModelMap model, @RequestParam("file") MultipartFile file) throws UnsupportedEncodingException {
+
+    @RequestMapping(value = "/user/addPhotos", method = RequestMethod.POST, headers = "Accept=application/json")
+    public ModelAndView addPhotos(HttpServletRequest request, ModelMap model, @RequestParam("file") MultipartFile file[]) throws UnsupportedEncodingException {
+        String threatUuid = convertString(request.getParameter("threatUuid"));
+        addFile(file, threatUuid);
+        return new ModelAndView("redirect:/getThreatDetails?uuid=" + threatUuid + "");
+    }
+
+        @RequestMapping(value = "/user/editThreat", method = RequestMethod.POST, headers = "Accept=application/json")
+    public String editThreat(HttpServletRequest request, ModelMap model, @RequestParam("file") MultipartFile file[]) throws UnsupportedEncodingException {
         request.setCharacterEncoding("UTF-8");
         String threatUuid = convertString(request.getParameter("uuidThreat"));
         String typeOfThreat = convertString(request.getParameter("typeOfThreat"));
@@ -122,78 +138,42 @@ public class ThreatController extends BaseController {
     }
 
 
-    @RequestMapping(value = "/user/addImage", method = RequestMethod.GET)
-    public String goAddImage(ModelMap model) {
-        return "addImage";
-    }
 
-//    @RequestMapping(value = {"/user/addImage"}, method = RequestMethod.POST)
-//    @ResponseBody
-//    public String addImage(HttpServletRequest request , @RequestParam("file") MultipartFile file) {
-//        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        String threatUuid = request.getParameter("uuid");
-//
-//
-//        if (!file.isEmpty()) {
-//            try {
-//
-//                Threat threat = threatDAO.get(threatUuid);
-//
-//
-//                byte[] bytes = file.getBytes();
-//
-//                // Creating the directory to store file
-//                String rootPath = System.getProperty("catalina.home");
-//                File dir = new File("tmpFiles");
-//                if (!dir.exists())
-//                    dir.mkdirs();
-//
-//                // Create the file on server
-//                File serverFile = new File(dir.getAbsolutePath()
-//                        + File.separator + threatUuid);
-//                BufferedOutputStream stream = new BufferedOutputStream(
-//                        new FileOutputStream(serverFile));
-//                stream.write(bytes);
-//                stream.close();
-//                threat.setPathToPhoto(dir.getAbsolutePath()
-//                        + File.separator + threatUuid);
-//                threatDAO.update(threat);
-//
-//                return "You successfully uploaded file";
-//            }
-//            catch (Exception e) {
-//                return "Error";
-//            }
-//        }
-//        else {
-//            return "file was empty";
-//        }
-//    }
+    public String addFile(MultipartFile filesArray[], String threatUuid) {
 
-    public String addFile(MultipartFile file, String threatUuid) {
-        if (!file.isEmpty()) {
+        List<MultipartFile> files = new ArrayList<MultipartFile>(Arrays.asList(filesArray));
+        if (!files.isEmpty()) {
             try {
+
 
                 Threat threat = threatDAO.get(threatUuid);
 
+                List<String> photosName = new ArrayList<String>(threat.getPathesToPhoto());
+                for(MultipartFile file: files) {
 
-                byte[] bytes = file.getBytes();
+                    byte[] bytes = file.getBytes();
 
-                // Creating the directory to store file
-                String rootPath = System.getProperty("catalina.home");
-                File dir = new File("tmpFiles");
-                if (!dir.exists())
-                    dir.mkdirs();
+                    // Creating the directory to store file
+                    String rootPath = System.getProperty("catalina.home");
 
-                // Create the file on server
-                File serverFile = new File(dir.getAbsolutePath()
-                        + File.separator + threatUuid);
-                BufferedOutputStream stream = new BufferedOutputStream(
-                        new FileOutputStream(serverFile));
-                stream.write(bytes);
-                stream.close();
-                threat.setPathToPhoto(dir.getAbsolutePath()
-                        + File.separator + threatUuid);
+                    int photoCounter = 0;
+
+                    // Create the file on server
+                    File serverFile = new File("/home/piotrek/uploadedFiles/" + threatUuid + "/" + file.getOriginalFilename());
+                    serverFile.getParentFile().mkdir();
+                    serverFile.createNewFile();
+
+                    file.transferTo(serverFile);
+                    photosName.add(threatUuid + "/" + file.getOriginalFilename());
+
+//                    BufferedOutputStream stream = new BufferedOutputStream(
+//                            new FileOutputStream(serverFile));
+//                    stream.write(bytes);
+//                    stream.close();
+
+                }
+
+                threat.setPathesToPhoto(photosName);
                 threatDAO.update(threat);
 
                 return "You successfully uploaded file";
@@ -336,18 +316,18 @@ public class ThreatController extends BaseController {
         Threat threat = threatDAO.get(threatUuid);
         if(threat!=null) {
             InputStream in;
-            if (threat.getPathToPhoto() != null) {
-                try {
-                    final HttpHeaders headers = new HttpHeaders();
-                    headers.setContentType(MediaType.IMAGE_PNG);
-                    in = new BufferedInputStream(new FileInputStream(threat.getPathToPhoto()));
-                    return new String(Base64.encodeBase64(IOUtils.toByteArray(in)));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+//            if (threat.getPathToPhoto() != null) {
+//                try {
+//                    final HttpHeaders headers = new HttpHeaders();
+//                    headers.setContentType(MediaType.IMAGE_PNG);
+//                    in = new BufferedInputStream(new FileInputStream(threat.getPathToPhoto()));
+//                    return new String(Base64.encodeBase64(IOUtils.toByteArray(in)));
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
 
         }
         return "Failure";
@@ -426,10 +406,10 @@ public class ThreatController extends BaseController {
         threat.deleteAllConection();
         threatDAO.update(threat);
 
-        if(threat1.getPathToPhoto()!=null) {
-            File file = new File(threat1.getPathToPhoto());
-            file.delete();
-        }
+//        if(threat1.getPathToPhoto()!=null) {
+//            File file = new File(threat1.getPathToPhoto());
+//            file.delete();
+//        }
 
         if(threat1.getType()!=null)
             threatTypeDAO.delete(threat1.getType());
@@ -456,7 +436,12 @@ public class ThreatController extends BaseController {
     @RequestMapping(value = "/getThreatDetails", method = RequestMethod.GET)
     public String getThreatDetails(ModelMap model, HttpServletRequest request) {
         String threatUuid = convertString(request.getParameter("uuid"));
-        model.addAttribute("threat", threatDAO.get(threatUuid));
+        Threat threat = threatDAO.get(threatUuid);
+        List<String> videosName = threat.getPathesToPhoto().stream().filter(path -> path.endsWith(".mp4")).collect(Collectors.toList());
+        List<String> photosName = threat.getPathesToPhoto().stream().filter(path -> !path.endsWith(".mp4")).collect(Collectors.toList());
+        model.addAttribute("threat", threat);
+        model.addAttribute("photos", photosName);
+        model.addAttribute("videos", videosName);
         return "threatDetails";
     }
 
