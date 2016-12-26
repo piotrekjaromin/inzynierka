@@ -7,36 +7,62 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class Rest extends Thread {
+public class Rest {
 
+    private static final int THREADS_NUMBER = 500;
     static String urlString = "http://localhost:8080/TrafficThreat/rest/";
 
-    public static void main(String[] args) throws InterruptedException {
-        Rest thread;
+    private static final Logger LOGGER = LoggerFactory.getLogger(Rest.class);
+
+    public void start() throws InterruptedException, ExecutionException {
+
 
         System.out.println("start time: " + System.currentTimeMillis());
 
-        for (int i = 0; i < 100; i++) {
-            thread = new Rest();
-            thread.start();
-            thread.sleep(2);
+        ExecutorService executorService = Executors.newFixedThreadPool(THREADS_NUMBER);
+
+//        for (int i = 0; i < THREADS_NUMBER; i++) {
+//            final int counter = i;
+//            //executorService.execute(()->sendRequest(counter));
+//
+//        }
+
+        List<CompletableFuture<Long>> results = new ArrayList<>();
+          for (int i = 0; i < THREADS_NUMBER; i++) {
+            final int counter = i;
+            //executorService.execute(()->sendRequest(counter));
+
+              results.add(CompletableFuture.supplyAsync(()->sendRequest(counter), executorService) );
+        }
+        for (CompletableFuture<Long> result: results) {
+            result.get();
+            //LOGGER.info("Duration time v2: {}", result.get());
         }
 
         System.out.println("Finish");
     }
 
-    public void run() {
-
+    public long sendRequest(int counter) {
+        Thread.currentThread().setName("Thread number: " + counter);
         /////////////////////////////////////////////// prepare parameters for register new user
-
-        String login = "login" + System.currentTimeMillis();
+        long startMilis = System.currentTimeMillis();
+        String login = "login" + UUID.randomUUID();
+        //LOGGER.info("start time: {}, login: {}", System.currentTimeMillis(), login);
         String mail = login + "@mail.com";
 
         String urlParam = "login=" + login;
@@ -47,7 +73,7 @@ public class Rest extends Thread {
         try {
             //////////////////////////////////////////////// register new user
 
-            String result = " register: ";
+            String result = "";
             String response = "";
 
             URL url = null;
@@ -67,13 +93,11 @@ public class Rest extends Thread {
                     (conn.getInputStream())));
 
             String output;
-            while ((output = br.readLine()) != null) {
-                result += output;
-            }
+            while ((output = br.readLine()) != null) {}
 
             conn.disconnect();
-
-            result += "\n login: ";
+            long registerTime = System.currentTimeMillis();
+            result += (registerTime - startMilis) + ";" ;
 
             ///////////////////////////////////////////////////////////////////prepare parameters for login
 
@@ -96,11 +120,12 @@ public class Rest extends Thread {
             br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
 
             while ((output = br.readLine()) != null) {
-                result += output;
                 response += output;
             }
 
             conn.disconnect();
+            long loginTime = System.currentTimeMillis();
+            result += (loginTime - registerTime) + ";";
 
 //        System.out.println("login: " + result);
             JSONParser parser = new JSONParser();
@@ -121,8 +146,6 @@ public class Rest extends Thread {
 
             ////////////////////////////////////////////////////////////////// add Threat
 
-            result += "\n addThreat: ";
-
             url = new URL(urlString + "addThreat/?" + urlParam);
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
@@ -137,11 +160,13 @@ public class Rest extends Thread {
 
             //      System.out.println("Output from Server .... \n");
             while ((output = br.readLine()) != null) {
-                result += output;
                 response += output;
             }
 
             conn.disconnect();
+
+            long addThreatTime = System.currentTimeMillis();
+            result += (addThreatTime - loginTime) + ";";
 
             obj = parser.parse(response);
             String threatUuid = (String) ((JSONObject) obj).get("uuid");
@@ -158,8 +183,6 @@ public class Rest extends Thread {
 
             /////////////////////////////////////////////////////////// Edit threat
 
-            result += "\n editThreat";
-
             url = new URL(urlString + "editThreat/?" + urlParam);
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
@@ -174,11 +197,14 @@ public class Rest extends Thread {
 
             //System.out.println("Output from Server .... \n");
             while ((output = br.readLine()) != null) {
-                result += output;
                 response += output;
             }
 
             conn.disconnect();
+
+
+            long editThreatTime = System.currentTimeMillis();
+            result += (editThreatTime - addThreatTime) + ";";
 
             //System.out.println("edit Threat: " + result);
 
@@ -186,10 +212,10 @@ public class Rest extends Thread {
 
             urlParam = "uuid=" + threatUuid;
             urlParam += "&token=" + token;
+            urlParam += "&login=" + login;
 
             /////////////////////////////////////////////////////////// delete threat
 
-            result += "\n deleteThreat";
 
             url = new URL(urlString + "deleteThreat/?" + urlParam);
             conn = (HttpURLConnection) url.openConnection();
@@ -204,17 +230,14 @@ public class Rest extends Thread {
             br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
 
             //System.out.println("Output from Server .... \n");
-            while ((output = br.readLine()) != null) {
-                result += output;
-            }
+            while ((output = br.readLine()) != null) {}
 
             conn.disconnect();
 
-            //System.out.println("delete Threat: " + result);
 
-            System.out.println("result: " + result);
-            System.out.println("____________________________________________");
-            System.out.println("endTime" + System.currentTimeMillis());
+            long deleteThreatTime = System.currentTimeMillis();
+            result += (deleteThreatTime - editThreatTime ) + "";
+            System.out.println(result);
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -225,5 +248,11 @@ public class Rest extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
+        long executionTime = System.currentTimeMillis() - startMilis;
+       // LOGGER.info("execution time: {}", executionTime);
+
+        return executionTime;
     }
 }

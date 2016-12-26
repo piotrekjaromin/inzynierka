@@ -4,6 +4,7 @@ import com.models.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -331,6 +332,7 @@ public class RestfulThreatController extends BaseController {
 
         String token = request.getParameter("token");
         String uuid = request.getParameter("uuid");
+        String  login = request.getParameter("login");
 
         Session session = sessionManager.getAndUpdateSession(token);
 
@@ -346,14 +348,14 @@ public class RestfulThreatController extends BaseController {
 
         Threat threat1 = threatDAO.get(uuid);
 
-        for(UserModel user : userModelDAO.getAll()){
+        UserModel user = userModelDAO.getByLogin(login);
+
             if(user.getThreats().contains(threat)){
                 user.deleteThreat(threat);
                 userModelDAO.update(user);
-                break;
             }
 
-        }
+
         threat.deleteAllConection();
         threatDAO.update(threat);
 

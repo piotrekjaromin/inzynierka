@@ -171,9 +171,6 @@
                         <div id="addThreatForm">
 
                             <form method="POST" id="editThreatID" enctype="multipart/form-data" action="/TrafficThreat/user/editThreat" >
-                                <label class="btn btn-default btn-file">
-                                    Choose file <input type="file" name="file" style="display: none;"/>
-                                </label>
                                 <select class="form-control" id="typeOfThreat" name="typeOfThreat" required>
                                     <option value="" disabled>Type of threat</option>
                                     <% out.print(printTypes((ThreatType) request.getAttribute("threatType"), "",
@@ -184,6 +181,9 @@
                                 <input type="hidden" id="uuidThreat" name="uuidThreat" class="form-control" value="${threat.uuid}">
                                 <input type="hidden" id="coordinates" name="coordinates" class="form-control">
                                 <input id="address" type="textbox" class="form-control" name="address" value="${threat.coordinates.street}, ${threat.coordinates.city}">
+                                <label class="btn btn-default btn-file">
+                                    Choose image/video <input type="file" name="file" style="display: none;"/>
+                                </label><br/>
                                 <input id="checkLocation" class="btn btn-default" type="button" value="Check Location">
                                 <input type="button" onclick="subFunction()" class="btn btn-default" value="Edit Threat">
                             </form>
