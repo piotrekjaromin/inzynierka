@@ -16,7 +16,7 @@
     if (type != null) {
         String result = type.getName();
         String button = " <button class='btn btn-default btn-xs' data-toggle='modal' data-target='#addType' onclick='addUuid(\"" + type.getUuid() + "\")'>add</button><br/>";
-        dashes += "---|";
+        dashes += " &emsp; ";
 
         result += button;
 

@@ -47,30 +47,29 @@
         var geocoder;
 
         function subFunction() {
-            if ($("#typeOfThreat").val() == null) {
-                $('#alert_placeholder').html('<div class="alert alert-danger">Error: no choosen type of threat </div>')
-                return false;
-            }
-            if ($("#description").val() == "") {
-                $('#alert_placeholder').html('<div class="alert alert-danger">Error: no description</div>')
-                return false;
-            }
+//            if ($("#typeOfThreat").val() == null) {
+//                $('#alert_placeholder').html('<div class="alert alert-danger">Error: no choosen type of threat </div>')
+//                return false;
+//            }
+//            if ($("#description").val() == "") {
+//                $('#alert_placeholder').html('<div class="alert alert-danger">Error: no description</div>')
+//                return false;
+//            }
+//
+//            if ($("#description").val().length < 10) {
+//                $('#alert_placeholder').html('<div class="alert alert-danger">Error: description too short</div>')
+//                return false;
+//            }
+//            if ($("#coordinates").val() == "" || $("#coordinates").val().split(';').length != 2) {
+//                $('#alert_placeholder').html('<div class="alert alert-danger">Error: bad coordinates</div>')
+//                return false;
+//            }
+//
+//            if ($("#address").val() == "") {
+//                $('#alert_placeholder').html('<div class="alert alert-danger">Error: bad location</div>')
+//                return false;
+//            }
 
-            if ($("#description").val().length < 10) {
-                $('#alert_placeholder').html('<div class="alert alert-danger">Error: description too short</div>')
-                return false;
-            }
-            if ($("#coordinates").val() == "" || $("#coordinates").val().split(';').length != 2) {
-                $('#alert_placeholder').html('<div class="alert alert-danger">Error: bad coordinates</div>')
-                return false;
-            }
-
-            if ($("#address").val() == "") {
-                $('#alert_placeholder').html('<div class="alert alert-danger">Error: bad location</div>')
-                return false;
-            }
-
-            $("#checkLocation").click();
             $("#editThreatID").submit();
 
 

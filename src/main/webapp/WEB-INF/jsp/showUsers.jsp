@@ -38,7 +38,6 @@
                         <div class="table-responsive">
                             <table class="table table-striped">
                                 <tr>
-                                    <td>uuid</td>
                                     <td>login</td>
                                     <td>mail</td>
                                     <td>name</td>
@@ -47,7 +46,6 @@
                                 </tr>
                                 <c:forEach items="${users}" var="user">
                                     <tr>
-                                        <td><c:out value="${user.uuid}"/></td>
                                         <td><c:out value="${user.login}"/></td>
                                         <td><c:out value="${user.mail}"/></td>
                                         <td><c:out value="${user.name}"/></td>

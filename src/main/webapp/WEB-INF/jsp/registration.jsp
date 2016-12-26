@@ -93,6 +93,9 @@
             <!-- /.col-lg-12 -->
         </div>
         <div class="row">
+            <div id="alert_placeholder"/>
+        </div>
+        <div class="row">
 
             <div class="col-xs-3" id="registrationForm">
                 <input type="text" id="loginReg" class="form-control" placeholder="Login">
@@ -107,9 +110,7 @@
             </div>
 
         </div>
-        <div class="row">
-            <div id="alert_placeholder"/>
-        </div>
+
     </div>
 </div>
 

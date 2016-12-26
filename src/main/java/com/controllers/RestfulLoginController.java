@@ -2,9 +2,7 @@ package com.controllers;
 
 
 import com.configuration.IdNumberGenerator;
-import com.models.Session;
-import com.models.UserModel;
-import com.models.UserRole;
+import com.models.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,9 +10,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 
 @RestController
 public class RestfulLoginController extends BaseController {
+
+
 
     /**
      * Rejestracja uzytkownika. Wszyscy maja dostep
@@ -23,31 +28,29 @@ public class RestfulLoginController extends BaseController {
 
     @RequestMapping(value = "/rest/registration/", method = RequestMethod.POST)
     public ResponseEntity<String> registrationUser(HttpServletRequest request) {
-        UserModel user = new UserModel();
         String login = request.getParameter("login");
         String password = request.getParameter("password");
-        String mail= request.getParameter("mail");
-        String name= request.getParameter("name");
+        String name = request.getParameter("name");
         String surname = request.getParameter("surname");
-        if (userModelDAO.isLogin(login))
-            return new ResponseEntity<String>("{\"status\" : \"Failure login is used\"}", HttpStatus.IM_USED);
+        String mail = request.getParameter("mail");
+        String role = request.getParameter("userRole");
 
-        if (userModelDAO.isMail(mail)) {
-            return new ResponseEntity<String>("{\"status\" : \"Failure mail is used\"}", HttpStatus.IM_USED);
-        }
+        if(userModelDAO.isLogin(login)) return new ResponseEntity<String>("{\"status\" : \"Failure login is already in use\"}", HttpStatus.IM_USED);
+        if(userModelDAO.isMail(mail)) return new ResponseEntity<String>("{\"status\" : \"Failure mail is already in use\"}", HttpStatus.IM_USED);
 
-        UserRole userRole = new UserRole();
-        userRole.setType("USER");
+        UserModel user = new UserModel();
+        user.setIdNumber(new IdNumberGenerator().getRandomNumberInRange(userModelDAO, 100000, 999999));
         user.setLogin(login);
         user.setPassword(password);
         user.setMail(mail);
-        user.setName(name);
         user.setSurname(surname);
-        user.setIdNumber(new IdNumberGenerator().getRandomNumberInRange(userModelDAO, 100000, 999999));
+        user.setName(name);
+        UserRole userRole = new UserRole();
+        userRole.setType(role);
         userRole = userRoleDAO.saveIfNotInDB(userRole);
         user.setUserRole(userRole);
         userModelDAO.save(user);
-        return new ResponseEntity<String>("{\"status\" : \"Success\"}", HttpStatus.CREATED);
+        return new ResponseEntity<String>("{\"status\" : \"Success\"}", HttpStatus.OK);
 
     }
 

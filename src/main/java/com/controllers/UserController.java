@@ -28,19 +28,36 @@ public class UserController extends BaseController {
 
     @RequestMapping(value = "/user/details", method = RequestMethod.POST, headers = "Accept=application/json")
     @ResponseBody
-    public UserModel userDetails() {
+    public String userDetails() {
 
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return userModelDAO.getByLogin(userDetails.getUsername());
+        UserModel user =userModelDAO.getByLogin(userDetails.getUsername());
+        String result = "{ \"login\" : \"" + user.getLogin() + "\",";
+        result += "\"mail\" : \"" + user.getMail() + "\",";
+        result += "\"name\" : \"" + user.getName() + "\",";
+        result += "\"surname\" : \"" + user.getSurname() + "\"}";
+        return result;
     }
 
     @RequestMapping(value = "/user/myThreats", method = RequestMethod.POST, headers = "Accept=application/json")
     @ResponseBody
-    public List<Threat> myThreats() {
+    public String myThreats() {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         UserModel user = userModelDAO.getByLogin(userDetails.getUsername());
+        String result = "{\"threats\": [";
+        int counter = 0;
+        for(Threat threat : threatDAO.myThreat(userDetails.getUsername())) {
+            counter++;
+            result += "{ \"uuid\" : \"" + threat.getUuid() + "\",";
+            result += "\"type\" : \"" + threat.getType().getName() + "\",";
+            result += "\"description\" : \"" + threat.getDescription() + "\",";
+            result += "\"isApproved\" : \"" + threat.getIsApproved() + "\"}";
+            if(counter < threatDAO.myThreat(userDetails.getUsername()).size())
+                result += ",";
 
-        return threatDAO.myThreat(userDetails.getUsername());
+        }
+        result += "]}";
+        return result;
     }
 
     @RequestMapping(value = "/user/editProfile", method = RequestMethod.GET)

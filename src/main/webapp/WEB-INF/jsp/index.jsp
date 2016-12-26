@@ -45,15 +45,17 @@
             $.ajax({
                 type: "POST",
                 url: "/TrafficThreat/loadVotes",
+                contentType: "application/x-www-form-urlencoded;charset=ISO-8859-15",
                 dataType: 'text',
                 data: {
                     uuid: threatUuid
                 },
                 async: false,
                 success: function (response) {
+
                     var obj = JSON.parse(response);
 
-                    var result = "<table class='table table-striped'><tr><td>stars</td><td>date</td><td>login</td><td>comment</td><td></td></tr>"
+                    var result = "<table class='table table-striped'><tr><td nowrap>stars</td><td>date</td><td>login</td><td>comment</td><td></td></tr>"
 
                     obj.forEach(function (vote) {
                         result += "<tr>";
@@ -63,7 +65,7 @@
                         for(i=0;  i< vote.numberOfStars; i++) {
                             stars += "<span class='glyphicon glyphicon-star'></span>"
                         }
-                        result += "<td>" + stars+ "</td>"
+                        result += "<td nowrap>" + stars+ "</td>"
                         result += "<td>" + vote.date + "</td>"
                         result += "<td>" + vote.login + "</td>"
                         result += "<td>" + vote.voteComment + "</td>"
@@ -83,6 +85,7 @@
                     result += "</table>";
                     result += "<button class='btn btn-default btn-xs' data-toggle='modal' data-target='#votesCommentModal'>Add Vote</button>"
                     $("#insertVotes").html(result);
+                    console.log("votes: " + result)
                 }
             });
         }
@@ -172,7 +175,9 @@
                     var context = "type: ${threat.type.name}<br>";
                     context += "description: ${threat.description}<br>";
                     context += "date: ${threat.date}<br>";
-                    context += "<img height='100' alt='No image' src='data:image/png;base64," + showImage('${threat.uuid}') + "'/><br>";
+                    <c:if test="${not empty threat.pathesToPhoto}">
+                    context += "<img src='/directory-listing-uri/${threat.pathesToPhoto.get(0)}' alt='nophoto' height='100'><br>";
+                    </c:if>
                     context += "<button class='btn btn-default' onclick='location.href=\"/TrafficThreat/getThreatDetails/?uuid=${threat.uuid}\"'>show details</button>";
                     context += "<button class='btn btn-default' data-toggle='modal' data-target='#votesModal' onclick='loadVotes(\"${threat.uuid}\")'>votes</button>";
 
@@ -353,20 +358,18 @@
                             <div class="table-responsive">
                                 <table class="table table-striped">
                                     <tr>
-                                        <th>uuid</th>
                                         <th>login</th>
                                         <th>type</th>
                                         <th>description</th>
-                                        <th>is approved</th>
+                                        <th>location</th>
                                         <th>details</th>
                                     </tr>
                                     <c:forEach items="${addedToday}" var="threat">
                                         <tr>
-                                            <td><c:out value="${threat.uuid}"/></td>
                                             <td><c:out value="${threat.login}"/></td>
                                             <td><c:out value="${threat.type.name}"/></td>
                                             <td><c:out value="${threat.description}"/></td>
-                                            <td><c:out value="${threat.isApproved}"/></td>
+                                            <td><c:out value="${threat.coordinates.city}"/>, <c:out value="${threat.coordinates.street}"/></td>
                                             <td>
                                                 <button class="btn btn-default" onclick="location.href='getThreatDetails/?uuid=${threat.uuid}'">
                                                     details

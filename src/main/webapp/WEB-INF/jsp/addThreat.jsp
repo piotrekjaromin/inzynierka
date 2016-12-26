@@ -23,28 +23,31 @@
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
 
-    <%!public String printTypes(ThreatType type, String dashes) {
+    <%!
+        public String printTypes(ThreatType type, String dashes) {
 
-        if (type != null) {
-            String result;
-            dashes += "---|";
-            if (type.getChilds().isEmpty()) {
-                result = "<option value = '" + type.getUuid() + "'>" + dashes + type.getName() + "</option>";
-            } else {
-                result = "<option disabled value = '" + type.getUuid() + "'>" + dashes + type.getName() + "</option>";
-            }
+            if (type != null) {
+                String result;
+                dashes += "&#09;";
+                if (type.getChilds().isEmpty()) {
+                    result = "<option value = '" + type.getUuid() + "'>" + dashes + type.getName() + "</option>";
+                } else {
+                    result = "<option disabled value = '" + type.getUuid() + "'>" + dashes + type.getName() + "</option>";
+                }
 
-            for (ThreatType typeTmp : type.getChilds()) {
-                result = result + printTypes(typeTmp, dashes);
-            }
-            return result;
-        } else return "";
-    }%>
+                for (ThreatType typeTmp : type.getChilds()) {
+                    result = result + printTypes(typeTmp, dashes);
+                }
+                return result;
+            } else return "";
+        }
+    %>
 
     <script>
 
         var map;
         var geocoder;
+        var isSubmit = false;
 
         $(document).ready(function () {
             $('#dayOfWeek').multiselect();
@@ -65,7 +68,7 @@
                 return false;
             }
             if ($("#coordinates").val() == "" || $("#coordinates").val().split(';').length != 2) {
-                $('#alert_placeholder').html('<div class="alert alert-danger">Error: bad coordinates</div>')
+                $('#alert_placeholder').html('<div class="alert alert-danger">Error: bad coordinatess</div>')
                 return false;
             }
 
@@ -74,8 +77,11 @@
                 return false;
             }
 
+            isSubmit = true
             $("#checkLocation").click();
-            $("#addThreatID").submit();
+
+
+
 
 
         }
@@ -96,16 +102,16 @@
             var startDate = "";
             var endDate = "";
 
-            if($('#dayOfWeek').length != 0) {
+            if ($('#dayOfWeek').length != 0) {
                 dateOfWeek = $('#dayOfWeek').val().join(",");
             }
 
-            if($('#startDate').length != 0) {
+            if ($('#startDate').length != 0) {
                 startDate = $('#startDate').val().join(",");
             }
 
 
-            if($('#endDate').length != 0) {
+            if ($('#endDate').length != 0) {
                 endDate = $('#dayOfWeek').val().join(",");
             }
 
@@ -143,17 +149,19 @@
             geocoder = new google.maps.Geocoder();
 
             document.getElementById('checkLocation').addEventListener('click', function () {
+                geocoder = new google.maps.Geocoder();
                 geocodeAddress(geocoder, map);
             });
         }
 
         function geocodeAddress(geocoder, resultsMap) {
-            var isCorrect = false;
+            isCorrect = false;
             var address = document.getElementById('address').value;
             geocoder.geocode({'address': address}, function (results, status) {
-                if (status === google.maps.GeocoderStatus.OK) {
-                    console.log("correct");
+                if (status === google.maps.GeocoderStatus.OK && results.length > 0 && results[0].geometry.location_type != 'RANGE_INTERPOLATED' && results[0].geometry.location_type !=  'APPROXIMATE') {
+                    console.log("correct, size: " + results[0].geometry.location_type);
                     isCorrect = true;
+                    console.log(isCorrect);
                     $('#coordinates').val(results[0].geometry.location.lat() + ";" + results[0].geometry.location.lng());
                     resultsMap.setZoom(15);
                     resultsMap.setCenter(results[0].geometry.location);
@@ -162,13 +170,14 @@
                         map: resultsMap,
                         position: results[0].geometry.location
                     });
+                    if(isSubmit) {
+                        $("#addThreatID").submit();
+                    }
                 } else {
-                    alert('Geocode was not successful for the following reason: ' + status);
-                    console.log("in geo");
+                    alert('Wrong address');
                 }
             });
             console.log(isCorrect);
-            return isCorrect;
         }
 
 
@@ -177,12 +186,14 @@
 
             if ($("#typeOfThreat2").val() == "jednorazowe") {
 
-                result += "<div class='form-group col-xs-3'><input type='text' id='startDate' name='startDate' class='form-control col-xs-3' placeholder='start date'></div>"
-                result += "<div class='form-group col-xs-3'><input type='text' id='endDate' name='startDate' class='form-control col-xs-3' placeholder='end date'></div>"
+                result += "<div class='form-group col-xs-2'><input type='text' id='startDate' name='startDate' class='form-control col-xs-3' placeholder='start date'></div>"
+                result += "<div class='form-group col-xs-2'><input type='text' id='endDate' name='endDate' class='form-control col-xs-3' placeholder='end date'></div>"
                 $("#dateOfTypeFields").html(result);
 
             } else if ($("#typeOfThreat2").val() == "okresowe") {
-                result = "<form class='form-inline'><div class='form-group'><select id='dayOfWeek' name='dayOfWeek' multiple='multiple'>"
+
+
+                result = "<div class='form-group col-xs-2'><select id='dayOfWeek' name='dayOfWeek' multiple='multiple'>"
                 result += "<option value='1'>Monday</option>"
                 result += "<option value='2'>Tuesday</option>"
                 result += "<option value='3'>Wednesday</option>"
@@ -191,8 +202,10 @@
                 result += "<option value='6'>Saturday</option>"
                 result += "<option value='7'>Sunday</option>"
                 result += "</select></div>"
-                result += "<div class='form-group'><input type='text' id='startDate' name='startDate' class='form-control' placeholder='start date'></div>"
-                result += "<div class='form-group'><input type='text' id='endDate' name='endDate' class='form-control' placeholder='end date'></div></form>"
+
+                result += "<div class='form-group col-xs-2'><input type='text' id='startDate' name='startDate' class='form-control col-xs-3' placeholder='start date'></div>"
+                result += "<div class='form-group col-xs-2'><input type='text' id='endDate' name='endDate' class='form-control col-xs-3' placeholder='end date'></div></form>"
+
                 $("#dateOfTypeFields").html(result);
                 $('#dayOfWeek').multiselect()
 
@@ -226,13 +239,7 @@
                         <div id="addThreatForm">
 
                             <form method="POST" id="addThreatID" enctype="multipart/form-data" action="/TrafficThreat/user/addThreat">
-                                <div class="row">
-                                    <div class="form-group col-xs-3">
-                                        <label class="btn btn-default btn-file">
-                                            <input type="file" name="file" accept=".jpg, .png, .mp4" multiple/>
-                                        </label>
-                                    </div>
-                                </div>
+
                                 <div class="row">
                                     <div class="form-group col-xs-4">
                                         <select class="form-control col-xs-3" id="typeOfThreat" name="typeOfThreat" required>
@@ -258,13 +265,22 @@
                                         <input type="text" id="description" name="description" class="form-control" placeholder="Description">
                                     </div>
                                 </div>
-                                <input type="hidden" id="coordinates" name="coordinates" class="form-control">
+
                                 <div class='row'>
-                                    <div class="input-group form-group col-xs-7">
-                                        <input id="address" type="textbox" class="form-control" name="address" value="Rynek główny, Kraków">
-                                        <span class="input-group-btn">
+                                    <div class="form-group col-xs-7">
+                                        <div class="input-group form-group col-xs-7">
+                                            <input id="address" type="textbox" class="form-control" name="address" value="Rynek główny, Kraków">
+                                            <span class="input-group-btn">
                                         <button id="checkLocation" class="btn btn-default" type="button">Go!</button>
                                         </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-xs-3">
+                                        <label class="btn btn-default btn-file">
+                                            <input type="file" name="file" accept=".jpg, .png, .mp4" multiple/>
+                                        </label>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -272,6 +288,7 @@
                                         <input type="button" onclick="subFunction()" class="btn btn-default" value="Add Threat">
                                     </div>
                                 </div>
+                                <input type="hidden" id="coordinates" name="coordinates" class="form-control">
                             </form>
                         </div>
                         <div id="alert_placeholder"></div>

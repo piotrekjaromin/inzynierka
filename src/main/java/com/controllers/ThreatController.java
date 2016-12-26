@@ -15,7 +15,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
@@ -24,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 
@@ -41,7 +45,6 @@ public class ThreatController extends BaseController {
     public ModelAndView addThreat(HttpServletRequest request, @RequestParam("file") MultipartFile files[], ModelMap model) throws UnsupportedEncodingException, ParseException {
 
         request.setCharacterEncoding("UTF-8");
-
         String[] dayOfWeeks = request.getParameterValues("dayOfWeek");
         String startDate = request.getParameter("startDate");
         String endDate = request.getParameter("endDate");
@@ -70,11 +73,10 @@ public class ThreatController extends BaseController {
         threat.setDateType(typeOfThreat2);
 
         if(typeOfThreat2.equals("jednorazowe")){
-            threat.setPeriodicDays(new ArrayList<String>(Arrays.asList(dayOfWeeks)));
             threat.setStartDate(format.parse(startDate));
             threat.setEndDate(format.parse(endDate));
         } else if(typeOfThreat2.equals("okresowe")) {
-
+            threat.setPeriodicDays(new ArrayList<String>(Arrays.asList(dayOfWeeks)));
             threat.setStartDate(format.parse(startDate));
             threat.setEndDate(format.parse(endDate));
         }
@@ -98,7 +100,7 @@ public class ThreatController extends BaseController {
         return new ModelAndView("redirect:/getThreatDetails?uuid=" + threatUuid + "");
     }
 
-        @RequestMapping(value = "/user/editThreat", method = RequestMethod.POST, headers = "Accept=application/json")
+    @RequestMapping(value = "/user/editThreat", method = RequestMethod.POST, headers = "Accept=application/json")
     public String editThreat(HttpServletRequest request, ModelMap model, @RequestParam("file") MultipartFile file[]) throws UnsupportedEncodingException {
         request.setCharacterEncoding("UTF-8");
         String threatUuid = convertString(request.getParameter("uuidThreat"));
@@ -142,20 +144,11 @@ public class ThreatController extends BaseController {
     public String addFile(MultipartFile filesArray[], String threatUuid) {
 
         List<MultipartFile> files = new ArrayList<MultipartFile>(Arrays.asList(filesArray));
-        if (!files.isEmpty()) {
+        if (!files.isEmpty() && !files.get(0).getOriginalFilename().equals("")) {
             try {
-
-
                 Threat threat = threatDAO.get(threatUuid);
-
                 List<String> photosName = new ArrayList<String>(threat.getPathesToPhoto());
                 for(MultipartFile file: files) {
-
-                    byte[] bytes = file.getBytes();
-
-                    // Creating the directory to store file
-                    String rootPath = System.getProperty("catalina.home");
-
                     int photoCounter = 0;
 
                     // Create the file on server
@@ -165,11 +158,6 @@ public class ThreatController extends BaseController {
 
                     file.transferTo(serverFile);
                     photosName.add(threatUuid + "/" + file.getOriginalFilename());
-
-//                    BufferedOutputStream stream = new BufferedOutputStream(
-//                            new FileOutputStream(serverFile));
-//                    stream.write(bytes);
-//                    stream.close();
 
                 }
 
@@ -374,7 +362,7 @@ public class ThreatController extends BaseController {
     public String loadVotes(HttpServletRequest request) {
         String threatUuid = convertString(request.getParameter("uuid"));
 
-        GsonBuilder builder = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss");
+        GsonBuilder builder = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").disableHtmlEscaping();
         return builder.create().toJson(threatDAO.get(threatUuid).getVotes());
     }
 
@@ -405,17 +393,31 @@ public class ThreatController extends BaseController {
         }
         threat.deleteAllConection();
         threatDAO.update(threat);
+//alter table threat drop constraint fkgrtu8oc5plp9bfvhu4xwabrae
+//alter table threatType drop constraint fkgrtu8oc5plp9bfvhu4xwabrae
+//alter table threattype_threattype drop constraint fkgrtu8oc5plp9bfvhu4xwabrae
 
 //        if(threat1.getPathToPhoto()!=null) {
 //            File file = new File(threat1.getPathToPhoto());
 //            file.delete();
 //        }
 
-        if(threat1.getType()!=null)
-            threatTypeDAO.delete(threat1.getType());
+        try{
 
-        if(threat1.getCoordinates()!=null)
-            coordinatesDAO.delete(threat1.getCoordinates());
+            if(threat1.getType()!=null){
+                threatTypeDAO.delete(threat1.getType());
+                threat1.setType(null);
+                threatDAO.update(threat1);
+            }
+            if (threat1.getCoordinates() != null) {
+                coordinatesDAO.delete(threat1.getCoordinates());
+                threat1.setCoordinates(null);
+                threatDAO.update(threat1);
+            }
+        }catch (Error | Exception e) {
+
+            delete(request);
+        }
 
         for(Vote vote : threat1.getVotes())
             voteDAO.delete(vote);

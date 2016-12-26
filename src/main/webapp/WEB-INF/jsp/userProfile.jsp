@@ -47,7 +47,6 @@
 
             document.getElementById("userDetailsBookmark").className = "active";
             document.getElementById("myThreatsBookmark").className = "";
-            document.getElementById("commentedThreatsBookmark").className = "";
 
 
             var userDetails = "login: " + json.login + "<br>";
@@ -74,8 +73,6 @@
             console.log(json);
             document.getElementById("userDetailsBookmark").className = "";
             document.getElementById("myThreatsBookmark").className = "active";
-            document.getElementById("commentedThreatsBookmark").className = "";
-
 
             var threats = "";
             threats = "<div class='table-responsive'><table class='table table-striped'>"
@@ -88,11 +85,11 @@
             threats += "<th>Delete</th>"
             threats += "</tr>"
 
-            json.forEach(function (threat) {
+            json.threats.forEach(function (threat) {
                 var button = "<button class='btn btn-default' onclick=\"location.href='/TrafficThreat/getThreatDetails/?uuid=" + threat.uuid + "'\">"
                 button += "details"
                 button += "</button>"
-                threats += "<tr><td>" + threat.uuid + "</td><td> " + threat.type.name + "</td><td> " + threat.description + " </td><td>" + threat.isApproved + "</td><td>" + button + "</td>";
+                threats += "<tr><td>" + threat.uuid + "</td><td> " + threat.type + "</td><td> " + threat.description + " </td><td>" + threat.isApproved + "</td><td>" + button + "</td>";
                 var deleteButton = "<td> <button class=\"btn btn-default\" onclick=\"deleteThreat('" + threat.uuid + "')\">delete</button> </td></tr>"
                 threats += deleteButton;
             })
@@ -100,22 +97,6 @@
             $('#myThreats').html(threats);
         }
 
-        function createReservedBooks(json) {
-            $('#myBooks').show();
-            $('#userDetails').hide();
-            console.log("json");
-            console.log(json);
-            document.getElementById("userDetailsBookmark").className = "";
-            document.getElementById("myThreatsBookmark").className = "";
-            document.getElementById("commentedThreatsBookmark").className = "active";
-
-            var myBooks = "";
-            json.forEach(function (book) {
-                console.log(book);
-                myBooks += book.title + " " + book.authors[0].name + " " + book.authors[0].surname + " " + book.year + "<br>";
-            })
-            $('#myBooks').html(createTableReserved(json));
-        }
 
         function deleteThreat(threatUuid) {
             $.ajax({
@@ -130,7 +111,7 @@
                     alert(response)
                 },
                 error: function (response) {
-                    alert("Failure")
+
                 }
             });
         };
@@ -212,7 +193,6 @@
                         <ul class="nav nav-tabs">
                             <li role="presentation" class="active" id="userDetailsBookmark"><a onclick="view('details')">Details</a></li>
                             <li role="presentation" class="" id="myThreatsBookmark"><a onclick="view('myThreats')">My Threats</a></li>
-                            <li role="presentation" class="" id="commentedThreatsBookmark"><a onclick="view('commentedThreats')">Commented Threads</a></li>
                         </ul>
                     </div>
                     <div class="panel-body">

@@ -78,6 +78,8 @@
                     <li>
                         <a href="/TrafficThreat/user/addThreat"><i class="fa fa-dashboard fa-fw"></i> Add Threat</a>
                     </li>
+                </sec:authorize>
+                <sec:authorize access="hasAnyRole('ADMIN')">
                     <li>
                         <a href="/TrafficThreat/admin/showUsers"><i class="fa fa-dashboard fa-fw"></i> Show Users</a>
                     </li>
